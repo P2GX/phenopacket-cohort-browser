@@ -1,5 +1,3 @@
-# Phenopacket Cohort Browser
-
 <p align="center">
   <img src="logo.png" alt="Phenopacket Cohort Browser" width="640">
 </p>
