@@ -18,7 +18,7 @@
   no install, no upload: drop your phenopacket JSON files and explore.
 </h3>
 
-A privacy-preserving cohort explorer for [GA4GH phenopackets](https://phenopacket-schema.readthedocs.io/).
+A **privacy-preserving** cohort explorer for [GA4GH phenopackets](https://phenopacket-schema.readthedocs.io/).
 Drop phenopacket JSON files into the page and browse demographics, diagnoses,
 genes, phenotypic features, diseases, measurements and individual patients —
 **all statistics run inside the browser; no data is ever uploaded.**
