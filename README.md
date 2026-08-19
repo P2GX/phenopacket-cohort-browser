@@ -8,9 +8,6 @@
   <a href="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/ci.yml">
     <img alt="CI" src="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/ci.yml/badge.svg?branch=master"></a>
   <a href="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/deploy.yml">
-    <img alt="Deploy" src="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/deploy.yml/badge.svg?branch=master"></a>
-  <a href="https://img.shields.io/badge/privacy-data%20never%20leaves%20your%20browser-2EA043">
-    <img alt="Privacy" src="https://img.shields.io/badge/privacy-data%20never%20leaves%20your%20browser-2EA043"></a>
   <a href="LICENSE">
     <img alt="License" src="https://img.shields.io/github/license/P2GX/phenopacket-cohort-browser?color=E3A923"></a>
 </p>
