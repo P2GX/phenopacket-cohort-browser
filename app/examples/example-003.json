@@ -1,0 +1,220 @@
+{
+  "id": "example-003",
+  "subject": {
+    "id": "PAT-0003",
+    "sex": "FEMALE",
+    "dateOfBirth": "2002-03-18",
+    "timeAtLastEncounter": {
+      "age": {
+        "iso8601duration": "P23Y8M"
+      }
+    },
+    "vitalStatus": {
+      "status": "ALIVE"
+    }
+  },
+  "phenotypicFeatures": [
+    {
+      "type": {
+        "id": "HP:0002960",
+        "label": "Autoimmunity"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P11Y4M"
+        }
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Mild"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0001873",
+        "label": "Thrombocytopenia"
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Moderate"
+      }
+    }
+  ],
+  "diseases": [
+    {
+      "term": {
+        "id": "MONDO:0011073",
+        "label": "hyper-IgM syndrome"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P14Y"
+        }
+      }
+    }
+  ],
+  "interpretations": [
+    {
+      "id": "interp-003",
+      "progressStatus": "SOLVED",
+      "diagnosis": {
+        "disease": {
+          "id": "MONDO:0011073",
+          "label": "hyper-IgM syndrome"
+        },
+        "genomicInterpretations": [
+          {
+            "subjectOrBiosampleId": "PAT-0003",
+            "interpretationStatus": "CAUSATIVE",
+            "variantInterpretation": {
+              "acmgPathogenicityClassification": "LIKELY_PATHOGENIC",
+              "variationDescriptor": {
+                "geneContext": {
+                  "valueId": "HGNC:2732",
+                  "symbol": "CYBB"
+                },
+                "expressions": [
+                  {
+                    "syntax": "hgvs.c",
+                    "value": "NM_000012.9:c.943C>A"
+                  }
+                ],
+                "allelicState": {
+                  "id": "GENO:0000136",
+                  "label": "hemizygous"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "assay": {
+        "id": "LOINC:8122-4",
+        "label": "CD4 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 765.4
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P21Y8M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8122-4",
+        "label": "CD4 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 471.08
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P5Y9M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:2458-8",
+        "label": "IgA [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 372.28
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P6Y11M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:2458-8",
+        "label": "IgA [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 88.45
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P22Y4M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:2458-8",
+        "label": "IgA [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 398.11
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P12Y10M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:2458-8",
+        "label": "IgA [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 180.86
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P11Y8M"
+        }
+      }
+    }
+  ],
+  "metaData": {
+    "created": "2026-01-01T00:00:00Z",
+    "createdBy": "make_example_cohort.py (synthetic data)",
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}

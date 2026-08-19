@@ -1,0 +1,291 @@
+{
+  "id": "example-016",
+  "subject": {
+    "id": "PAT-0016",
+    "sex": "UNKNOWN",
+    "dateOfBirth": "2019-05-27",
+    "timeAtLastEncounter": {
+      "age": {
+        "iso8601duration": "P6Y4M"
+      }
+    },
+    "vitalStatus": {
+      "status": "ALIVE"
+    }
+  },
+  "phenotypicFeatures": [
+    {
+      "type": {
+        "id": "HP:0000964",
+        "label": "Eczema"
+      },
+      "excluded": true
+    },
+    {
+      "type": {
+        "id": "HP:0001873",
+        "label": "Thrombocytopenia"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0002721",
+        "label": "Immunodeficiency"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0002090",
+        "label": "Pneumonia"
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Severe"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0002205",
+        "label": "Recurrent respiratory infections"
+      },
+      "excluded": true
+    }
+  ],
+  "diseases": [
+    {
+      "term": {
+        "id": "MONDO:0018396",
+        "label": "Wiskott-Aldrich syndrome"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P3Y"
+        }
+      }
+    }
+  ],
+  "interpretations": [
+    {
+      "id": "interp-016",
+      "progressStatus": "SOLVED",
+      "diagnosis": {
+        "disease": {
+          "id": "MONDO:0018396",
+          "label": "Wiskott-Aldrich syndrome"
+        },
+        "genomicInterpretations": [
+          {
+            "subjectOrBiosampleId": "PAT-0016",
+            "interpretationStatus": "CANDIDATE",
+            "variantInterpretation": {
+              "acmgPathogenicityClassification": "PATHOGENIC",
+              "variationDescriptor": {
+                "geneContext": {
+                  "valueId": "HGNC:11919",
+                  "symbol": "CD40LG"
+                },
+                "expressions": [
+                  {
+                    "syntax": "hgvs.c",
+                    "value": "NM_000072.7:c.1146A>G"
+                  }
+                ],
+                "allelicState": {
+                  "id": "GENO:0000136",
+                  "label": "heterozygous"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "assay": {
+        "id": "LOINC:26474-7",
+        "label": "Lymphocytes [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:10*3/uL",
+            "label": "10*3/uL"
+          },
+          "value": 3.17
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P0Y7M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:26474-7",
+        "label": "Lymphocytes [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:10*3/uL",
+            "label": "10*3/uL"
+          },
+          "value": 2.94
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P0Y8M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:26474-7",
+        "label": "Lymphocytes [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:10*3/uL",
+            "label": "10*3/uL"
+          },
+          "value": 4.15
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P2Y3M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:2464-6",
+        "label": "IgM [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 209.49
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P5Y11M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8124-0",
+        "label": "CD19 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 207.11
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P5Y2M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8124-0",
+        "label": "CD19 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 473.4
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P0Y4M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8124-0",
+        "label": "CD19 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 62.48
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P3Y3M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8122-4",
+        "label": "CD4 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 735.1
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P3Y10M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8122-4",
+        "label": "CD4 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 1075.08
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P5Y8M"
+        }
+      }
+    }
+  ],
+  "metaData": {
+    "created": "2026-01-01T00:00:00Z",
+    "createdBy": "make_example_cohort.py (synthetic data)",
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "id": "example-004",
+  "subject": {
+    "id": "PAT-0004",
+    "sex": "MALE",
+    "dateOfBirth": "1959-06-03",
+    "timeAtLastEncounter": {
+      "age": {
+        "iso8601duration": "P33Y3M"
+      }
+    },
+    "vitalStatus": {
+      "status": "ALIVE"
+    }
+  },
+  "phenotypicFeatures": [
+    {
+      "type": {
+        "id": "HP:0004313",
+        "label": "Decreased circulating antibody concentration"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P30Y3M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0002090",
+        "label": "Pneumonia"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P6Y10M"
+        }
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Moderate"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0012649",
+        "label": "Increased inflammatory response"
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Severe"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0001873",
+        "label": "Thrombocytopenia"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P25Y11M"
+        }
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Mild"
+      }
+    }
+  ],
+  "diseases": [
+    {
+      "term": {
+        "id": "MONDO:0007959",
+        "label": "common variable immunodeficiency"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P18Y"
+        }
+      }
+    }
+  ],
+  "interpretations": [
+    {
+      "id": "interp-004",
+      "progressStatus": "UNSOLVED",
+      "diagnosis": {
+        "disease": {
+          "id": "MONDO:0007959",
+          "label": "common variable immunodeficiency"
+        },
+        "genomicInterpretations": [
+          {
+            "subjectOrBiosampleId": "PAT-0004",
+            "interpretationStatus": "CAUSATIVE",
+            "variantInterpretation": {
+              "acmgPathogenicityClassification": "PATHOGENIC",
+              "variationDescriptor": {
+                "geneContext": {
+                  "valueId": "HGNC:2732",
+                  "symbol": "CYBB"
+                },
+                "expressions": [
+                  {
+                    "syntax": "hgvs.c",
+                    "value": "NM_000047.4:c.240A>G"
+                  }
+                ],
+                "allelicState": {
+                  "id": "GENO:0000136",
+                  "label": "hemizygous"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "measurements": [
+    {
+      "assay": {
+        "id": "LOINC:2458-8",
+        "label": "IgA [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 81.56
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P27Y7M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:2458-8",
+        "label": "IgA [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 351.05
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P15Y1M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:26474-7",
+        "label": "Lymphocytes [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:10*3/uL",
+            "label": "10*3/uL"
+          },
+          "value": 0.61
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P6Y8M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:26474-7",
+        "label": "Lymphocytes [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:10*3/uL",
+            "label": "10*3/uL"
+          },
+          "value": 4.37
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P0Y3M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:26474-7",
+        "label": "Lymphocytes [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:10*3/uL",
+            "label": "10*3/uL"
+          },
+          "value": 2.07
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P10Y7M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:26474-7",
+        "label": "Lymphocytes [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:10*3/uL",
+            "label": "10*3/uL"
+          },
+          "value": 3.95
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P13Y0M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8124-0",
+        "label": "CD19 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 6.07
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P24Y6M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:8124-0",
+        "label": "CD19 cells [#/volume] in Blood"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:cells/uL",
+            "label": "cells/uL"
+          },
+          "value": 463.63
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P16Y7M"
+        }
+      }
+    }
+  ],
+  "metaData": {
+    "created": "2026-01-01T00:00:00Z",
+    "createdBy": "make_example_cohort.py (synthetic data)",
+    "phenopacketSchemaVersion": "2.0.0"
+  }
+}
