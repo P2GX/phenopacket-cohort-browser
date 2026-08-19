@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USIDNET Cohort Explorer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232563eb'/%3E%3Cpath d='M4 11V7M8 11V4M12 11V9' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="vendor/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- Drop zone -->
+<div id="dropzone">
+  <h1 id="dz-title">USIDNET<br><em>Cohort Explorer</em></h1>
+  <div id="drop-area">
+    <div class="icon">📂</div>
+    <strong>Drop phenopacket JSON files here</strong>
+    <p>or click to browse · supports multiple files &amp; folders</p>
+  </div>
+  <input type="file" id="file-input" multiple accept=".json" webkitdirectory>
+  <div style="display:flex;gap:10px">
+    <button class="btn" id="btn-select">Select Files</button>
+    <button class="btn btn-ghost" id="btn-example">Load example cohort</button>
+  </div>
+  <p style="color:var(--muted);font-size:11px;">All processing happens in your browser — no data is uploaded.</p>
+  <div id="py-status"><span class="dot"></span>Python engine: starting…</div>
+  <div class="dz-links">
+    <span id="dz-version"></span>
+    <a id="dz-repo" href="#" target="_blank" rel="noopener">Source &amp; version history on GitHub</a>
+  </div>
+</div>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loading-msg">Parsing phenopackets…</p>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <h2 id="hdr-title">USIDNET <span>Cohort Explorer</span></h2>
+    <div id="cohort-stats"></div>
+    <button class="btn btn-ghost" style="font-size:11px;" id="btn-reset">← Load new files</button>
+  </header>
+
+  <nav><!-- built from the tab registry --></nav>
+
+  <div id="sections"><!-- one .section per registered tab --></div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

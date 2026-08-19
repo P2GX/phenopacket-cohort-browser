@@ -1,0 +1,2422 @@
+<!DOCTYPE html>
+<!-- saved from url=(0112)file:///Users/adamgraefe/Library/Containers/com.microsoft.Outlook/Data/tmp/Outlook%20Temp/cohort_explorer_3.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USIDNET Cohort Explorer</title>
+<script src="./USIDNET Cohort Explorer_files/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./USIDNET Cohort Explorer_files/css2" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #f5f6f8;
+    --surface:  #ffffff;
+    --border:   #e2e6ea;
+    --muted:    #7a8694;
+    --text:     #1a2332;
+    --accent:   #2563eb;
+    --green:    #16a34a;
+    --orange:   #d97706;
+    --red:      #dc2626;
+    --purple:   #7c3aed;
+    --teal:     #0891b2;
+    --font-mono: 'DM Mono', monospace;
+    --font-serif: 'Fraunces', serif;
+    --font-num:  'Calibri', 'Candara', 'Segoe UI', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Drop zone ── */
+  #dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 20px;
+    padding: 40px;
+    text-align: center;
+  }
+
+  #dropzone h1 {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-size: clamp(28px, 5vw, 52px);
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+
+  #dropzone h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  #drop-area {
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 60px 80px;
+    cursor: pointer;
+    transition: all .2s;
+    max-width: 500px;
+    width: 100%;
+  }
+  #drop-area:hover, #drop-area.drag-over {
+    border-color: var(--accent);
+    background: rgba(37,99,235,.04);
+  }
+  #drop-area p { color: var(--muted); margin-top: 8px; font-size: 12px; }
+  #drop-area .icon { font-size: 36px; margin-bottom: 12px; }
+
+  #file-input { display: none; }
+
+  .btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn-ghost:hover { background: rgba(37,99,235,.06); opacity:1; }
+
+  /* ── App shell ── */
+  #app { display: none; }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    padding: 12px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+  }
+  header h2 {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-size: 18px;
+    white-space: nowrap;
+  }
+  header h2 span { color: var(--accent); }
+
+  #cohort-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .stat-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .stat-pill strong { color: var(--text); }
+
+  /* ── Nav tabs ── */
+  nav {
+    display: flex;
+    gap: 2px;
+    padding: 0 28px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  nav button {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── Sections ── */
+  .section { display: none; padding: 28px; }
+  .section.active { display: block; }
+
+  .section-title {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    font-size: 22px;
+    margin-bottom: 6px;
+    letter-spacing: -.3px;
+  }
+  .section-subtitle { color: var(--muted); font-size: 12px; margin-bottom: 24px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+  @media(max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .card h3 {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── Stat cards ── */
+  .stat-cards { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    min-width: 140px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .stat-card .val {
+    font-family: var(--font-num);
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card .lbl { color: var(--muted); font-size: 11px; }
+
+  /* ── Charts ── */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+  }
+
+  /* ── Tables ── */
+  .table-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    width: 220px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--muted); }
+
+  .rows-select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+  }
+  .rows-select:focus { border-color: var(--accent); }
+
+  .table-wrap { overflow-x: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th {
+    background: var(--bg);
+    color: var(--muted);
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+    cursor: pointer;
+    transition: color .15s;
+  }
+  th:hover { color: var(--text); }
+  th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+  th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    max-width: 320px;
+    font-family: var(--font-num);
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(37,99,235,.03); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+  .badge-green  { background: #dcfce7; color: #15803d; }
+  .badge-orange { background: #fef3c7; color: #b45309; }
+  .badge-red    { background: #fee2e2; color: #b91c1c; }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+  .badge-muted  { background: #f1f5f9; color: #64748b; }
+
+  .bar-cell { display: flex; align-items: center; gap: 8px; }
+  .mini-bar-bg {
+    flex: 1; height: 6px; background: #e2e6ea; border-radius: 3px; min-width: 60px;
+  }
+  .mini-bar { height: 6px; border-radius: 3px; background: var(--accent); }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+  .pagination span { color: var(--muted); font-size: 11px; }
+  .pg-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    transition: border-color .15s;
+  }
+  .pg-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .pg-btn:disabled { opacity: .35; cursor: default; }
+  .pg-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+  /* ── Patient browser ── */
+  #browser-list { display: flex; flex-direction: column; gap: 0; }
+  .patient-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .patient-row:hover { background: #f0f4ff; }
+  .patient-row.selected { background: #eff6ff; border-left: 2px solid var(--accent); }
+  .patient-id { color: var(--accent); min-width: 80px; font-size: 11px; }
+  .patient-meta { flex: 1; color: var(--muted); font-size: 11px; }
+  .patient-dx { font-size: 11px; color: var(--text); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  #browser-detail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+  }
+  #browser-detail h3 {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .detail-section { margin-top: 16px; }
+  .detail-section h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(226,230,234,.8);
+  }
+  .detail-row .key { color: var(--muted); }
+  .detail-row .val { text-align: right; }
+
+  .hpo-chip {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1d4ed8;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+    margin: 2px;
+  }
+  .hpo-chip.absent {
+    background: #fee2e2;
+    color: #b91c1c;
+    text-decoration: line-through;
+  }
+
+  .no-data { color: var(--muted); font-style: italic; font-size: 11px; }
+  .empty-state { text-align:center; color: var(--muted); padding: 40px; font-size: 12px; }
+
+  /* ── Donut ── */
+  .donut-wrap { display: flex; align-items: center; gap: 24px; }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-val { color: var(--muted); margin-left: auto; padding-left: 16px; }
+
+  /* ── Loading ── */
+  #loading {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(245,246,248,.9);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #loading p { color: var(--muted); font-size: 12px; }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  scrollbar-width: thin;
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Drop zone -->
+<div id="dropzone">
+  <h1>USIDNET<br><em>Cohort Explorer</em></h1>
+  <div id="drop-area" onclick="document.getElementById(&#39;file-input&#39;).click()">
+    <div class="icon">📂</div>
+    <strong>Drop phenopacket JSON files here</strong>
+    <p>or click to browse · supports multiple files &amp; folders</p>
+  </div>
+  <input type="file" id="file-input" multiple="" accept=".json" webkitdirectory="">
+  <button class="btn" onclick="document.getElementById(&#39;file-input&#39;).click()">Select Files</button>
+  <p style="color:var(--muted);font-size:11px;">All processing happens in your browser — no data is uploaded.</p>
+</div>
+
+<!-- Loading -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p id="loading-msg">Parsing phenopackets…</p>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <h2>USIDNET <span>Cohort Explorer</span></h2>
+    <div id="cohort-stats"></div>
+    <button class="btn btn-ghost" style="font-size:11px;" onclick="resetApp()">← Load new files</button>
+  </header>
+
+  <nav>
+    <button class="active" onclick="showTab(&#39;demographics&#39;,this)">Demographics</button>
+    <button onclick="showTab(&#39;diagnoses&#39;,this)">Diagnoses</button>
+    <button onclick="showTab(&#39;genes&#39;,this)">Genes</button>
+    <button onclick="showTab(&#39;phenotypes&#39;,this)">Phenotypic Features</button>
+    <button onclick="showTab(&#39;diseases&#39;,this)">Diseases</button>
+    <button onclick="showTab(&#39;measurements&#39;,this)">Measurements</button>
+    <button onclick="showTab(&#39;browser&#39;,this)">Patient Browser</button>
+  </nav>
+
+  <!-- ── Demographics ── -->
+  <div id="tab-demographics" class="section active">
+    <div class="section-title">Demographics</div>
+    <div class="section-subtitle">Subject-level overview across the cohort</div>
+    <div class="stat-cards" id="demo-stats"></div>
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>Sex Distribution</h3>
+        <div class="donut-wrap">
+          <div style="width:160px;height:160px;flex-shrink:0">
+            <canvas id="chart-sex"></canvas>
+          </div>
+          <div class="donut-legend" id="sex-legend"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Vital Status</h3>
+        <div class="donut-wrap">
+          <div style="width:160px;height:160px;flex-shrink:0">
+            <canvas id="chart-vital"></canvas>
+          </div>
+          <div class="donut-legend" id="vital-legend"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>Year of Birth</h3>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="chart-yob"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Age at Last Encounter <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0">(5-year bins)</span></h3>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="chart-age"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-top:20px">
+      <div class="card">
+        <h3>Current Age <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0">computed from date of birth · 5-year bins</span></h3>
+        <div class="chart-wrap" style="height:200px">
+          <canvas id="chart-curage"></canvas>
+        </div>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center">
+        <h3>Age Summary</h3>
+        <div id="age-summary-table"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Diagnoses ── -->
+  <div id="tab-diagnoses" class="section">
+    <div class="section-title">Diagnoses</div>
+    <div class="section-subtitle">From the interpretations block · grouped by disease</div>
+    <div class="card" style="margin-bottom:20px">
+      <h3>Top 30 Diagnoses</h3>
+      <div class="chart-wrap" id="chart-dx-wrap" style="height:360px">
+        <canvas id="chart-dx"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Full Table</h3>
+      <div id="tbl-diagnoses"></div>
+    </div>
+  </div>
+
+  <!-- ── Genes ── -->
+  <div id="tab-genes" class="section">
+    <div class="section-title">Genes</div>
+    <div class="section-subtitle">HGNC-annotated genomic interpretations across the cohort</div>
+
+    <!-- Stat cards -->
+    <div class="stat-cards" id="gene-stats"></div>
+
+    <!-- Top charts row -->
+    <div class="grid-2" style="margin-bottom:20px">
+      <div class="card">
+        <h3>Top 20 Genes by Patient Count</h3>
+        <div class="chart-wrap" style="height:300px">
+          <canvas id="chart-genes"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <h3>ACMG Classification</h3>
+        <div class="donut-wrap" style="justify-content:center;padding:20px 0">
+          <div style="width:160px;height:160px;flex-shrink:0">
+            <canvas id="chart-acmg"></canvas>
+          </div>
+          <div class="donut-legend" id="acmg-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gene Summary table -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Gene Summary
+        <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:8px">one row per gene · click Distribution for onset histogram</span>
+      </h3>
+      <div id="tbl-gene-summary"></div>
+    </div>
+
+    <!-- Gene × Diagnosis Explorer -->
+    <div class="card" style="margin-bottom:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <div>
+          <h3 style="margin-bottom:2px">Gene × Diagnosis Explorer</h3>
+          <div style="font-size:11px;color:var(--muted)">Explore how genes and diagnoses relate across the cohort</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <select id="gd-view" class="rows-select" onchange="buildGeneDxExplorer()">
+            <option value="gene-per-dx">Genes within each Diagnosis</option>
+            <option value="dx-per-gene">Diagnoses within each Gene</option>
+            <option value="heatmap">Co-occurrence Heatmap</option>
+          </select>
+          <select id="gd-top" class="rows-select" onchange="buildGeneDxExplorer()">
+            <option value="15">Top 15</option>
+            <option value="25">Top 25</option>
+            <option value="50">Top 50</option>
+            <option value="0">All</option>
+          </select>
+          <select id="gd-metric" class="rows-select" onchange="buildGeneDxExplorer()">
+            <option value="patients">by patients</option>
+            <option value="records">by records</option>
+          </select>
+        </div>
+      </div>
+      <div id="gd-chart-wrap" style="position:relative;overflow-x:auto">
+        <div id="gd-placeholder" style="text-align:center;padding:60px;color:var(--muted);font-size:12px">Loading…</div>
+        <canvas id="chart-gene-dx" style="display:none"></canvas>
+        <div id="gd-heatmap" style="display:none;overflow-x:auto"></div>
+      </div>
+      <div id="gd-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:11px"></div>
+    </div>
+
+    <!-- Gene × Variant detail table -->
+    <div class="card">
+      <h3>Gene × Variant Table</h3>
+      <div id="tbl-genes"></div>
+    </div>
+  </div>
+
+  <!-- ── Phenotypic Features ── -->
+  <div id="tab-phenotypes" class="section">
+    <div class="section-title">Phenotypic Features</div>
+    <div class="section-subtitle">HPO-coded terms across the cohort</div>
+    <div class="card" style="margin-bottom:20px">
+      <h3>Top 30 HPO Terms</h3>
+      <div class="chart-wrap" id="chart-hpo-wrap" style="height:360px">
+        <canvas id="chart-hpo"></canvas>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <h3>All HPO Terms</h3>
+      <div id="tbl-phenotypes"></div>
+    </div>
+
+    <!-- Phenotypes over time -->
+    <div class="card" id="card-pheno-time">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <div>
+          <h3 style="margin-bottom:2px">Phenotypic Features Over Time</h3>
+          <div style="font-size:11px;color:var(--muted)">Onset age distribution per HPO term · select a term to explore</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="pheno-term-select" class="rows-select" style="min-width:220px" onchange="buildPhenoOverTime()">
+            <option value="">— select HPO term —</option>
+          </select>
+          <select id="pheno-group-select" class="rows-select" onchange="buildPhenoOverTime()">
+            <option value="cohort">Whole cohort</option>
+            <option value="sex">By sex</option>
+            <option value="diagnosis">By diagnosis</option>
+          </select>
+          <select id="pheno-mode-select" class="rows-select" onchange="buildPhenoOverTime()">
+            <option value="histogram">Histogram</option>
+            <option value="scatter">Rug / scatter</option>
+            <option value="ecdf">Cumulative (ECDF)</option>
+          </select>
+        </div>
+      </div>
+      <div id="pheno-time-info" style="font-size:11px;color:var(--muted);margin-bottom:8px"></div>
+      <div style="position:relative;height:300px"><canvas id="chart-pheno-time"></canvas></div>
+      <div id="pheno-time-legend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:11px"></div>
+    </div>
+  </div>
+
+  <!-- ── Diseases ── -->
+  <div id="tab-diseases" class="section">
+    <div class="section-title">Diseases Block</div>
+    <div class="section-subtitle">From the diseases field (may differ from interpretations)</div>
+    <div class="card" style="margin-bottom:20px">
+      <h3>Top 30 Diseases</h3>
+      <div class="chart-wrap" id="chart-dis-wrap" style="height:360px">
+        <canvas id="chart-dis"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Full Table</h3>
+      <div id="tbl-diseases"></div>
+    </div>
+  </div>
+
+  <!-- ── Measurements ── -->
+  <div id="tab-measurements" class="section">
+    <div class="section-title">Measurements</div>
+    <div class="section-subtitle">Quantitative assay values across the cohort · LOINC-coded</div>
+
+    <div class="stat-cards" id="meas-stats"></div>
+
+    <!-- Assay overview table -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Assay Overview</h3>
+      <div id="tbl-assays"></div>
+    </div>
+
+    <!-- Distribution charts for top assays -->
+    <div class="card" style="margin-bottom:20px">
+      <h3>Value Distributions
+        <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:8px">top assays by frequency · box = IQR · line = median · whiskers = 5–95th percentile</span>
+      </h3>
+      <div id="meas-boxplots"></div>
+    </div>
+
+    <!-- Raw records table -->
+    <div class="card">
+      <h3>All Measurement Records</h3>
+      <div id="tbl-measurements"></div>
+    </div>
+
+    <!-- Measurements over time -->
+    <div class="card" style="margin-top:20px" id="card-meas-time">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <div>
+          <h3 style="margin-bottom:2px">Measurements Over Time</h3>
+          <div style="font-size:11px;color:var(--muted)">Select an assay and grouping to explore longitudinal trends</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <select id="time-assay-select" class="rows-select" style="min-width:200px" onchange="buildMeasOverTime()">
+            <option value="">— select assay —</option>
+          </select>
+          <select id="time-group-select" class="rows-select" onchange="buildMeasOverTime()">
+            <option value="cohort">Whole cohort</option>
+            <option value="sex">By sex</option>
+            <option value="diagnosis">By diagnosis</option>
+          </select>
+          <select id="time-mode-select" class="rows-select" onchange="buildMeasOverTime()">
+            <option value="scatter">Scatter</option>
+            <option value="median">Median line</option>
+            <option value="both">Both</option>
+          </select>
+        </div>
+      </div>
+      <div id="meas-time-info" style="font-size:11px;color:var(--muted);margin-bottom:8px"></div>
+      <div style="position:relative;height:320px"><canvas id="chart-meas-time"></canvas></div>
+      <div id="meas-time-legend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;font-size:11px"></div>
+    </div>
+  </div>
+
+  <!-- ── Patient Browser ── -->
+  <div id="tab-browser" class="section">
+    <div class="section-title">Patient Browser</div>
+    <div class="section-subtitle">Browse individual phenopackets</div>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:20px;align-items:start">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center">
+          <input class="search-box" id="browser-search" placeholder="Search ID, diagnosis…" oninput="filterBrowser()" style="width:100%">
+        </div>
+        <div id="browser-list"></div>
+        <div style="padding:10px 14px;border-top:1px solid var(--border)">
+          <div id="browser-pagination" class="pagination"></div>
+        </div>
+      </div>
+      <div id="browser-detail">
+        <div class="empty-state">← Select a patient to view details</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════
+let PACKETS = [];
+let charts  = {};
+
+// ── Utility ──
+function isoToYears(iso) {
+  if (!iso) return null;
+  const m = iso.match(/P(?:(\d+)Y)?(?:(\d+)M)?/);
+  if (!m) return null;
+  return (parseInt(m[1]||0)) + (parseInt(m[2]||0))/12;
+}
+function fmtAge(iso) {
+  if (!iso) return '—';
+  const y = isoToYears(iso);
+  const yr = Math.floor(y), mo = Math.round((y - yr)*12);
+  return mo ? `${yr}y ${mo}m` : `${yr}y`;
+}
+function fmtYears(y) {
+  if (y===null||y===undefined) return '—';
+  const yr = Math.floor(y), mo = Math.round((y - yr)*12);
+  return mo ? `${yr}y ${mo}m` : `${yr}y`;
+}
+function counter(arr) {
+  const c = {};
+  arr.forEach(v => { c[v] = (c[v]||0) + 1; });
+  return c;
+}
+function sortedEntries(obj) {
+  return Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+}
+
+// ── File loading ──
+const dropArea  = document.getElementById('drop-area');
+const fileInput = document.getElementById('file-input');
+
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('drag-over'); });
+dropArea.addEventListener('dragleave', ()=> dropArea.classList.remove('drag-over'));
+dropArea.addEventListener('drop', e => {
+  e.preventDefault(); dropArea.classList.remove('drag-over');
+  loadFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener('change', ()=> loadFiles([...fileInput.files]));
+
+async function loadFiles(files) {
+  const jsonFiles = files.filter(f => f.name.endsWith('.json'));
+  if (!jsonFiles.length) { alert('No JSON files found.'); return; }
+
+  showLoading(`Parsing ${jsonFiles.length.toLocaleString()} phenopackets…`);
+  await new Promise(r => setTimeout(r, 50));
+
+  const packets = [];
+  for (let i = 0; i < jsonFiles.length; i++) {
+    if (i % 500 === 0) { updateLoading(`Parsing… ${i.toLocaleString()} / ${jsonFiles.length.toLocaleString()}`); await tick(); }
+    try {
+      const text = await jsonFiles[i].text();
+      packets.push(JSON.parse(text));
+    } catch(e) { /* skip bad files */ }
+  }
+
+  PACKETS = packets;
+  updateLoading('Building charts…');
+  await tick();
+  buildAll();
+  hideLoading();
+  document.getElementById('dropzone').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function tick() { return new Promise(r => setTimeout(r, 30)); }
+function showLoading(msg) { document.getElementById('loading').style.display='flex'; updateLoading(msg); }
+function updateLoading(msg) { document.getElementById('loading-msg').textContent = msg; }
+function hideLoading()  { document.getElementById('loading').style.display='none'; }
+function resetApp() { PACKETS=[]; Object.values(charts).forEach(c=>c.destroy?.()); charts={}; document.getElementById('dropzone').style.display='flex'; document.getElementById('app').style.display='none'; }
+
+// ═══════════════════════════════════════════════════════════════════
+// BUILD ALL
+// ═══════════════════════════════════════════════════════════════════
+function buildAll() {
+  buildDemographics();
+  buildDiagnoses();
+  buildGenes();
+  buildGeneDxExplorer();
+  buildPhenotypes();
+  buildDiseases();
+  buildMeasurements();
+  buildBrowser();
+  updateHeaderStats();
+}
+
+function updateHeaderStats() {
+  const ages = PACKETS.map(p => isoToYears(p.subject?.timeAtLastEncounter?.age?.iso8601duration)).filter(v=>v!==null);
+  const sortedAges = [...ages].sort((a,b)=>a-b);
+  const median = sortedAges.length ? sortedAges[Math.floor(sortedAges.length/2)].toFixed(1) : '—';
+  const nDx = new Set(PACKETS.flatMap(p => p.interpretations?.map(i=>i.diagnosis?.disease?.id)||[])).size;
+  document.getElementById('cohort-stats').innerHTML = `
+    <div class="stat-pill"><strong>${PACKETS.length.toLocaleString()}</strong> patients</div>
+    <div class="stat-pill">median age <strong>${median}y</strong></div>
+    <div class="stat-pill"><strong>${nDx}</strong> unique diagnoses</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DEMOGRAPHICS
+// ═══════════════════════════════════════════════════════════════════
+function buildDemographics() {
+  const TODAY = new Date();
+
+  // ── Collect subject data ──────────────────────────────────────────
+  const sexCounts    = counter(PACKETS.map(p => p.subject?.sex || 'UNKNOWN'));
+  const vitalCounts  = counter(PACKETS.map(p => p.subject?.vitalStatus?.status || 'UNKNOWN'));
+
+  // Age at last encounter (from ISO duration)
+  const agesEncounter = PACKETS
+    .map(p => isoToYears(p.subject?.timeAtLastEncounter?.age?.iso8601duration))
+    .filter(v => v !== null);
+
+  // Year of birth (from dateOfBirth field)
+  const birthYears = PACKETS
+    .map(p => p.subject?.dateOfBirth ? new Date(p.subject.dateOfBirth).getFullYear() : null)
+    .filter(v => v !== null);
+
+  // Current age (today minus dateOfBirth)
+  const currentAges = PACKETS
+    .map(p => {
+      if (!p.subject?.dateOfBirth) return null;
+      const dob = new Date(p.subject.dateOfBirth);
+      if (isNaN(dob)) return null;
+      return (TODAY - dob) / (1000 * 60 * 60 * 24 * 365.25);
+    })
+    .filter(v => v !== null);
+
+  const sortedEnc = [...agesEncounter].sort((a,b)=>a-b);
+  const sortedCur = [...currentAges].sort((a,b)=>a-b);
+  const medianOf = arr => arr.length ? arr[Math.floor(arr.length/2)] : null;
+
+  // ── Stat cards ───────────────────────────────────────────────────
+  const alive   = vitalCounts['ALIVE']   || 0;
+  const deceased = vitalCounts['DECEASED'] || vitalCounts['DEAD'] || 0;
+  const medEncounter = medianOf(sortedEnc);
+  const medCurrent   = medianOf(sortedCur);
+
+  document.getElementById('demo-stats').innerHTML = `
+    <div class="stat-card"><div class="val" style="color:var(--accent)">${PACKETS.length.toLocaleString()}</div><div class="lbl">Total Patients</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--green)">${alive.toLocaleString()}</div><div class="lbl">Alive</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--red)">${deceased.toLocaleString()}</div><div class="lbl">Deceased</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--orange)">${medEncounter!==null?fmtYears(medEncounter):'—'}</div><div class="lbl">Median Age at Encounter</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--purple)">${medCurrent!==null?fmtYears(medCurrent):'—'}</div><div class="lbl">Median Current Age</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--teal)">${birthYears.length ? Math.min(...birthYears) : '—'}</div><div class="lbl">Earliest Birth Year</div></div>`;
+
+  // ── Sex donut ────────────────────────────────────────────────────
+  const sexColors = { FEMALE:'#7c3aed', MALE:'#2563eb', UNKNOWN:'#94a3b8', OTHER:'#16a34a' };
+  const sexLabels = Object.keys(sexCounts);
+  const sexVals   = sexLabels.map(k => sexCounts[k]);
+  destroyChart('sex');
+  charts.sex = new Chart(document.getElementById('chart-sex'), {
+    type: 'doughnut',
+    data: { labels: sexLabels, datasets: [{ data: sexVals, backgroundColor: sexLabels.map(l => sexColors[l]||'#94a3b8'), borderWidth:0, hoverOffset:4 }] },
+    options: { cutout:'65%', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw.toLocaleString()} (${(ctx.raw/PACKETS.length*100).toFixed(1)}%)`}} }, animation:{duration:600} }
+  });
+  document.getElementById('sex-legend').innerHTML = sexLabels.map((l,i) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${sexColors[l]||'#94a3b8'}"></div>${l}<span class="legend-val">${sexVals[i].toLocaleString()}</span></div>`).join('');
+
+  // ── Vital status donut ───────────────────────────────────────────
+  const vitalColors = { ALIVE:'#16a34a', DECEASED:'#dc2626', DEAD:'#dc2626', UNKNOWN:'#94a3b8' };
+  const vitalLabels = Object.keys(vitalCounts);
+  const vitalVals   = vitalLabels.map(k => vitalCounts[k]);
+  destroyChart('vital');
+  charts.vital = new Chart(document.getElementById('chart-vital'), {
+    type: 'doughnut',
+    data: { labels: vitalLabels, datasets: [{ data: vitalVals, backgroundColor: vitalLabels.map(l => vitalColors[l]||'#94a3b8'), borderWidth:0, hoverOffset:4 }] },
+    options: { cutout:'65%', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw.toLocaleString()} (${(ctx.raw/PACKETS.length*100).toFixed(1)}%)`}} }, animation:{duration:600} }
+  });
+  document.getElementById('vital-legend').innerHTML = vitalLabels.map((l,i) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${vitalColors[l]||'#94a3b8'}"></div>${l}<span class="legend-val">${vitalVals[i].toLocaleString()}</span></div>`).join('');
+
+  // ── Helper: build histogram bins ─────────────────────────────────
+  function makeHistogram(values, binSize) {
+    if (!values.length) return { bins:[], labels:[] };
+    const mn = Math.floor(Math.min(...values) / binSize) * binSize;
+    const mx = Math.ceil(Math.max(...values)  / binSize) * binSize;
+    const bins=[]; const labels=[];
+    for (let b=mn; b<mx; b+=binSize) {
+      bins.push(0);
+      labels.push(binSize === 1 ? String(b) : `${b}–${b+binSize-1}`);
+    }
+    values.forEach(v => {
+      const i = Math.min(Math.floor((v-mn)/binSize), bins.length-1);
+      bins[i]++;
+    });
+    return { bins, labels };
+  }
+
+  const chartDefaults = (color) => ({
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()} patients`}} },
+    scales:{
+      x:{ ticks:{color:'#94a3b8',font:{size:10,family:"Calibri, Candara, sans-serif"},maxRotation:45}, grid:{color:'rgba(0,0,0,.06)'} },
+      y:{ ticks:{color:'#94a3b8',font:{size:10,family:"Calibri, Candara, sans-serif"}}, grid:{color:'rgba(0,0,0,.06)'} }
+    }
+  });
+
+  // ── Year of birth histogram (1-year bins) ────────────────────────
+  destroyChart('yob');
+  if (birthYears.length) {
+    const { bins, labels } = makeHistogram(birthYears, 1);
+    charts.yob = new Chart(document.getElementById('chart-yob'), {
+      type:'bar',
+      data:{ labels, datasets:[{ data:bins, backgroundColor:'#34d399', borderRadius:2, borderSkipped:false }] },
+      options: chartDefaults('#34d399')
+    });
+  } else {
+    document.getElementById('chart-yob').parentElement.innerHTML =
+      '<p style="color:var(--muted);font-size:12px;text-align:center;padding:40px 0">No date of birth data available</p>';
+  }
+
+  // ── Age at last encounter histogram (5-year bins) ────────────────
+  destroyChart('age');
+  if (agesEncounter.length) {
+    const { bins, labels } = makeHistogram(agesEncounter, 5);
+    charts.age = new Chart(document.getElementById('chart-age'), {
+      type:'bar',
+      data:{ labels, datasets:[{ data:bins, backgroundColor:'#60a5fa', borderRadius:2, borderSkipped:false }] },
+      options: chartDefaults('#60a5fa')
+    });
+  } else {
+    document.getElementById('chart-age').parentElement.innerHTML =
+      '<p style="color:var(--muted);font-size:12px;text-align:center;padding:40px 0">No age-at-encounter data available</p>';
+  }
+
+  // ── Current age histogram (5-year bins) ─────────────────────────
+  destroyChart('curage');
+  if (currentAges.length) {
+    const { bins, labels } = makeHistogram(currentAges, 5);
+    charts.curage = new Chart(document.getElementById('chart-curage'), {
+      type:'bar',
+      data:{ labels, datasets:[{ data:bins, backgroundColor:'#f472b6', borderRadius:2, borderSkipped:false }] },
+      options: chartDefaults('#f472b6')
+    });
+  } else {
+    document.getElementById('chart-curage').parentElement.innerHTML =
+      '<p style="color:var(--muted);font-size:12px;text-align:center;padding:40px 0">No date of birth data for current age</p>';
+  }
+
+  // ── Age summary table ────────────────────────────────────────────
+  const pctWithDob = birthYears.length ? (birthYears.length/PACKETS.length*100).toFixed(1) : '0';
+  const pctWithEnc = agesEncounter.length ? (agesEncounter.length/PACKETS.length*100).toFixed(1) : '0';
+  const minOf = arr => arr.length ? Math.min(...arr) : null;
+  const maxOf = arr => arr.length ? Math.max(...arr) : null;
+
+  document.getElementById('age-summary-table').innerHTML = `
+    <table style="width:100%;font-size:12px;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:var(--bg)"></th>
+          <th style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:var(--bg)">Age at Encounter</th>
+          <th style="text-align:right;padding:7px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.8px;background:var(--bg)">Current Age</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${[
+          ['N with data', agesEncounter.length.toLocaleString()+` (${pctWithEnc}%)`, currentAges.length.toLocaleString()+` (${pctWithDob}%)`],
+          ['Minimum',  fmtYears(minOf(sortedEnc)),  fmtYears(minOf(sortedCur))],
+          ['Median',   fmtYears(medianOf(sortedEnc)), fmtYears(medianOf(sortedCur))],
+          ['Mean',     sortedEnc.length ? fmtYears(sortedEnc.reduce((a,b)=>a+b,0)/sortedEnc.length) : '—',
+                       sortedCur.length ? fmtYears(sortedCur.reduce((a,b)=>a+b,0)/sortedCur.length) : '—'],
+          ['Maximum',  fmtYears(maxOf(sortedEnc)),  fmtYears(maxOf(sortedCur))],
+        ].map(([lbl,enc,cur]) => `
+          <tr>
+            <td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--muted)">${lbl}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right">${enc}</td>
+            <td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right">${cur}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DIAGNOSES
+// ═══════════════════════════════════════════════════════════════════
+function buildDiagnoses() {
+  const dxMap = {};
+  PACKETS.forEach(p => {
+    (p.interpretations||[]).forEach(interp => {
+      const d = interp.diagnosis?.disease;
+      if (!d) return;
+      const k = d.id;
+      if (!dxMap[k]) dxMap[k] = { id:d.id, label:d.label, count:0, statuses:[], onsets:[] };
+      dxMap[k].count++;
+      dxMap[k].statuses.push(interp.progressStatus||'');
+      // onset
+      (p.diseases||[]).forEach(dis => {
+        if (dis.term?.id === k) {
+          const yr = isoToYears(dis.onset?.age?.iso8601duration);
+          if (yr!==null) dxMap[k].onsets.push(yr);
+        }
+      });
+    });
+  });
+  const sorted = Object.values(dxMap).sort((a,b)=>b.count-a.count);
+  const top30  = sorted.slice(0,30).reverse();
+
+  // update chart height
+  document.getElementById('chart-dx-wrap').style.height = Math.max(200, top30.length*22)+'px';
+
+  destroyChart('dx');
+  charts.dx = new Chart(document.getElementById('chart-dx'), {
+    type: 'bar',
+    data: {
+      labels: top30.map(d=>d.label),
+      datasets:[{ data: top30.map(d=>d.count), backgroundColor:'#22c55e', borderRadius:3, borderSkipped:false }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()} patients`}} },
+      scales: {
+        x:{ ticks:{color:'#94a3b8',font:{size:10,family:"Calibri, Candara, sans-serif"}}, grid:{color:'rgba(0,0,0,.06)'} },
+        y:{ ticks:{color:'#334155',font:{size:10,family:"Calibri, Candara, sans-serif"}}, grid:{display:false} }
+      }
+    }
+  });
+
+  const cols = [
+    { key:'label', label:'Disease', render: r=>`<span>${r.label}</span>` },
+    { key:'id',    label:'MONDO ID', render: r=>`<span style="color:var(--muted)">${r.id}</span>` },
+    { key:'count', label:'Patients', render: r=>{const pct=r.count/PACKETS.length*100; return `<div class="bar-cell"><span>${r.count.toLocaleString()}</span><div class="mini-bar-bg"><div class="mini-bar" style="width:${pct}%;background:var(--green)"></div></div><span style="color:var(--muted)">${pct.toFixed(1)}%</span></div>`; }},
+    { key:'medOnset', label:'Median Onset', render: r=>{ const s=[...r.onsets].sort((a,b)=>a-b); return fmtYears(s.length?s[Math.floor(s.length/2)]:null); } },
+  ];
+  renderTable('tbl-diagnoses', sorted, cols, {defaultSort:'count', defaultDir:'desc', searchKeys:['label','id']});
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GENES
+// ═══════════════════════════════════════════════════════════════════
+function buildGenes() {
+  const geneRows = [];
+  PACKETS.forEach(p => {
+    const sex = p.subject?.sex || 'UNKNOWN';
+    (p.interpretations||[]).forEach(interp => {
+      const dx = interp.diagnosis;
+      (dx?.genomicInterpretations||[]).forEach(gi => {
+        const vd    = gi.variantInterpretation?.variationDescriptor;
+        const gene  = vd?.geneContext || gi.gene;
+        if (!gene?.symbol) return;
+        const expr    = vd?.expressions?.[0]?.value || '—';
+        const acmg    = gi.variantInterpretation?.acmgPathogenicityClassification || '—';
+        const allelic = vd?.allelicState?.label || '—';
+        geneRows.push({
+          gene: gene.symbol, hgnc_id: gene.valueId||'—',
+          disease: dx.disease?.label||'—', diseaseId: dx.disease?.id||'—',
+          acmg, status: gi.interpretationStatus||'—',
+          hgvs: expr, allelic, sex,
+          patientId: p.subject?.id || p.id,
+        });
+      });
+    });
+  });
+
+  // Store globally for explorer
+  window._geneRows = geneRows;
+
+  // ── Stat cards ────────────────────────────────────────────────────
+  const uniqueGenes    = new Set(geneRows.map(r=>r.gene)).size;
+  const uniqueDx       = new Set(geneRows.map(r=>r.diseaseId)).size;
+  const uniquePatients = new Set(geneRows.map(r=>r.patientId)).size;
+  const pathCount      = geneRows.filter(r=>r.acmg==='PATHOGENIC'||r.acmg==='LIKELY_PATHOGENIC').length;
+  document.getElementById('gene-stats').innerHTML = `
+    <div class="stat-card"><div class="val" style="color:var(--accent)">${uniqueGenes.toLocaleString()}</div><div class="lbl">Unique Genes</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--green)">${uniquePatients.toLocaleString()}</div><div class="lbl">Patients with Variants</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--purple)">${geneRows.length.toLocaleString()}</div><div class="lbl">Total Records</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--orange)">${uniqueDx.toLocaleString()}</div><div class="lbl">Linked Diagnoses</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--red)">${pathCount.toLocaleString()}</div><div class="lbl">Path / Likely Path</div></div>`;
+
+  // ── Top genes chart ───────────────────────────────────────────────
+  const geneCounts = counter(geneRows.map(r=>r.gene));
+  const top20genes = sortedEntries(geneCounts).slice(0,20).reverse();
+  destroyChart('genes');
+  charts.genes = new Chart(document.getElementById('chart-genes'), {
+    type:'bar',
+    data:{ labels:top20genes.map(e=>e[0]), datasets:[{data:top20genes.map(e=>e[1]),backgroundColor:'#a78bfa',borderRadius:3,borderSkipped:false}] },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()} records`}}},
+      scales:{x:{ticks:{color:'#94a3b8',font:{size:10,family:"Calibri, Candara, sans-serif"}},grid:{color:'rgba(0,0,0,.06)'}},
+              y:{ticks:{color:'#334155',font:{size:10,family:"Calibri, Candara, sans-serif"}},grid:{display:false}}}
+    }
+  });
+
+  // ── ACMG donut ────────────────────────────────────────────────────
+  const acmgCounts = counter(geneRows.map(r=>r.acmg));
+  const acmgColors = { PATHOGENIC:'#dc2626', LIKELY_PATHOGENIC:'#d97706', UNCERTAIN_SIGNIFICANCE:'#94a3b8', LIKELY_BENIGN:'#16a34a', BENIGN:'#2563eb' };
+  const acmgLabels = Object.keys(acmgCounts);
+  destroyChart('acmg');
+  charts.acmg = new Chart(document.getElementById('chart-acmg'), {
+    type:'doughnut',
+    data:{ labels:acmgLabels, datasets:[{data:acmgLabels.map(k=>acmgCounts[k]), backgroundColor:acmgLabels.map(l=>acmgColors[l]||'#94a3b8'), borderWidth:0, hoverOffset:4}] },
+    options:{cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw.toLocaleString()}`}}},animation:{duration:600}}
+  });
+  document.getElementById('acmg-legend').innerHTML = acmgLabels.map(l=>
+    `<div class="legend-item"><div class="legend-dot" style="background:${acmgColors[l]||'#94a3b8'}"></div><span style="font-size:10px">${l.replace(/_/g,' ')}</span><span class="legend-val">${acmgCounts[l]}</span></div>`).join('');
+
+  // ── Gene Summary table ────────────────────────────────────────────
+  // One row per gene: unique patients, linked diagnoses, ACMG breakdown
+  const geneSummaryMap = {};
+  geneRows.forEach(r => {
+    if (!geneSummaryMap[r.gene]) geneSummaryMap[r.gene] = {
+      gene:r.gene, hgnc_id:r.hgnc_id,
+      patients:new Set(), diseases:new Set(),
+      acmgCounts:{}, records:0
+    };
+    const g = geneSummaryMap[r.gene];
+    g.patients.add(r.patientId);
+    g.diseases.add(r.disease);
+    g.acmgCounts[r.acmg] = (g.acmgCounts[r.acmg]||0) + 1;
+    g.records++;
+  });
+  const geneSummary = Object.values(geneSummaryMap).map(g => ({
+    gene: g.gene, hgnc_id: g.hgnc_id,
+    nPatients: g.patients.size,
+    nDiseases: g.diseases.size,
+    diseases:  [...g.diseases].join(' · '),
+    records:   g.records,
+    topAcmg:   Object.entries(g.acmgCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—',
+    acmgBreak: Object.entries(g.acmgCounts).map(([k,v])=>`${k.replace(/_/g,' ')}:${v}`).join(', '),
+  })).sort((a,b)=>b.nPatients-a.nPatients);
+
+  const sumCols = [
+    { key:'gene',      label:'Gene',       render: r=>`<strong style="color:var(--accent)">${r.gene}</strong>` },
+    { key:'hgnc_id',   label:'HGNC',       render: r=>`<span style="color:var(--muted);font-size:11px">${r.hgnc_id}</span>` },
+    { key:'nPatients', label:'Patients',   render: r=>{const pct=r.nPatients/PACKETS.length*100;return `<div class="bar-cell"><span>${r.nPatients}</span><div class="mini-bar-bg"><div class="mini-bar" style="width:${pct}%;background:var(--purple)"></div></div><span style="color:var(--muted)">${pct.toFixed(1)}%</span></div>`;} },
+    { key:'records',   label:'Records',    render: r=>r.records },
+    { key:'nDiseases', label:'# Diagnoses',render: r=>r.nDiseases },
+    { key:'diseases',  label:'Diagnoses',  render: r=>`<span style="font-size:11px">${r.diseases}</span>` },
+    { key:'topAcmg',   label:'Top ACMG',   render: r=>{ const col={PATHOGENIC:'red',LIKELY_PATHOGENIC:'orange',UNCERTAIN_SIGNIFICANCE:'muted',LIKELY_BENIGN:'green',BENIGN:'blue'}[r.topAcmg]||'muted'; return `<span class="badge badge-${col}">${r.topAcmg.replace(/_/g,' ')}</span>`; } },
+    { key:'acmgBreak', label:'ACMG Detail',render: r=>`<span style="font-size:10px;color:var(--muted)">${r.acmgBreak}</span>` },
+  ];
+  renderTable('tbl-gene-summary', geneSummary, sumCols, {defaultSort:'nPatients', defaultDir:'desc', searchKeys:['gene','hgnc_id','diseases','topAcmg']});
+
+  // ── Gene × Variant table ──────────────────────────────────────────
+  const varCols = [
+    { key:'gene',    label:'Gene',    render: r=>`<strong style="color:var(--accent)">${r.gene}</strong>` },
+    { key:'hgnc_id', label:'HGNC',   render: r=>`<span style="color:var(--muted);font-size:11px">${r.hgnc_id}</span>` },
+    { key:'disease', label:'Disease', render: r=>`<span>${r.disease}</span>` },
+    { key:'acmg',    label:'ACMG',   render: r=>{ const col={PATHOGENIC:'red',LIKELY_PATHOGENIC:'orange',UNCERTAIN_SIGNIFICANCE:'muted',LIKELY_BENIGN:'green',BENIGN:'blue'}[r.acmg]||'muted'; return `<span class="badge badge-${col}">${r.acmg.replace(/_/g,' ')}</span>`; } },
+    { key:'status',  label:'Status', render: r=>{ const col={CAUSATIVE:'green',CONTRIBUTORY:'orange',CANDIDATE:'purple',UNCERTAIN:'muted'}[r.status]||'muted'; return `<span class="badge badge-${col}">${r.status}</span>`; } },
+    { key:'hgvs',    label:'HGVS (c.)', render: r=>`<span style="font-size:11px;color:var(--muted)">${r.hgvs}</span>` },
+    { key:'allelic', label:'Zygosity',  render: r=>`<span style="font-size:11px">${r.allelic}</span>` },
+  ];
+  renderTable('tbl-genes', geneRows, varCols, {defaultSort:'gene', defaultDir:'asc', searchKeys:['gene','disease','hgvs','acmg']});
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHENOTYPES
+// ═══════════════════════════════════════════════════════════════════
+function buildPhenotypes() {
+  const hpoMap = {};
+  PACKETS.forEach(p => {
+    (p.phenotypicFeatures||[]).forEach(pf => {
+      const t = pf.type;
+      if (!t?.id) return;
+      if (pf.excluded) return;
+      if (!hpoMap[t.id]) hpoMap[t.id] = { id:t.id, label:t.label||'—', count:0, severities:[], onsets:[] };
+      hpoMap[t.id].count++;
+      if (pf.severity?.label) hpoMap[t.id].severities.push(pf.severity.label);
+      const yr = isoToYears(pf.onset?.age?.iso8601duration);
+      if (yr!==null) hpoMap[t.id].onsets.push(yr);
+    });
+  });
+
+  const sorted = Object.values(hpoMap).sort((a,b)=>b.count-a.count);
+  const top30  = sorted.slice(0,30).reverse();
+
+  document.getElementById('chart-hpo-wrap').style.height = Math.max(200,top30.length*22)+'px';
+  destroyChart('hpo');
+  charts.hpo = new Chart(document.getElementById('chart-hpo'), {
+    type:'bar',
+    data:{ labels:top30.map(h=>h.label), datasets:[{data:top30.map(h=>h.count),backgroundColor:'#fb923c',borderRadius:3,borderSkipped:false}] },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()} patients`}}},
+      scales:{x:{ticks:{color:'#94a3b8',font:{size:10,family:"Calibri, Candara, sans-serif"}},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#334155',font:{size:10,family:"Calibri, Candara, sans-serif"}},grid:{display:false}}}
+    }
+  });
+
+  const maxCount = Math.max(...sorted.map(r=>r.count),1);
+  const cols = [
+    { key:'label', label:'HPO Term', render: r=>`<span>${r.label}</span>` },
+    { key:'id',    label:'HPO ID',   render: r=>`<span style="color:var(--muted);font-size:11px">${r.id}</span>` },
+    { key:'count', label:'Patients', render: r=>{ const pct=r.count/PACKETS.length*100; return `<div class="bar-cell"><span>${r.count.toLocaleString()}</span><div class="mini-bar-bg"><div class="mini-bar" style="width:${pct}%;background:#fc8d59"></div></div><span style="color:var(--muted)">${pct.toFixed(1)}%</span></div>`; }},
+    { key:'medOnset', label:'Median Onset', render: r=>{ const s=[...r.onsets].sort((a,b)=>a-b); return fmtYears(s.length?s[Math.floor(s.length/2)]:null); }},
+    { key:'topSev', label:'Most Common Severity', render: r=>{ if(!r.severities.length) return '<span class="no-data">—</span>'; const c=counter(r.severities); return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]; }},
+  ];
+  renderTable('tbl-phenotypes', sorted, cols, {defaultSort:'count', defaultDir:'desc', searchKeys:['label','id']});
+
+  // Populate phenotype-over-time selector
+  populatePhenoTimeSelector(sorted);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GENE × DIAGNOSIS EXPLORER
+// ═══════════════════════════════════════════════════════════════════
+const GD_PALETTE = [
+  '#2563eb','#16a34a','#dc2626','#d97706','#7c3aed','#0891b2',
+  '#db2777','#65a30d','#ea580c','#6366f1','#0d9488','#9333ea',
+  '#b45309','#0369a1','#15803d','#be123c','#7e22ce','#0f766e',
+  '#92400e','#1d4ed8','#166534','#991b1b','#6b21a8','#155e75',
+  '#854d0e','#1e40af','#14532d','#7f1d1d','#4c1d95','#164e63',
+];
+
+function buildGeneDxExplorer() {
+  const rows   = window._geneRows || [];
+  const view   = document.getElementById('gd-view')?.value   || 'gene-per-dx';
+  const topN   = parseInt(document.getElementById('gd-top')?.value  || '15');
+  const metric = document.getElementById('gd-metric')?.value || 'patients';
+
+  const chartEl   = document.getElementById('chart-gene-dx');
+  const heatmapEl = document.getElementById('gd-heatmap');
+  const phEl      = document.getElementById('gd-placeholder');
+  const legendEl  = document.getElementById('gd-legend');
+
+  if (!rows.length) {
+    phEl.textContent = 'No gene data available.';
+    phEl.style.display = 'block';
+    chartEl.style.display = 'none';
+    heatmapEl.style.display = 'none';
+    return;
+  }
+
+  // Unique genes and diseases
+  const allGenes = [...new Set(rows.map(r=>r.gene))];
+  const allDx    = [...new Set(rows.map(r=>r.disease))];
+
+  // Count function: unique patients or total records per (gene, disease)
+  const countFn = (subset) => metric === 'patients'
+    ? new Set(subset.map(r=>r.patientId)).size
+    : subset.length;
+
+  if (view === 'heatmap') {
+    // ── Heatmap: genes (rows) × diagnoses (cols) ──────────────────
+    destroyChart('gene-dx');
+    chartEl.style.display = 'none';
+    heatmapEl.style.display = 'block';
+    phEl.style.display = 'none';
+    legendEl.innerHTML = '';
+
+    // Pick top genes and top diseases by total count
+    const geneTotals = Object.fromEntries(allGenes.map(g=>[g, countFn(rows.filter(r=>r.gene===g))]));
+    const dxTotals   = Object.fromEntries(allDx.map(d=>[d, countFn(rows.filter(r=>r.disease===d))]));
+    const topGenes   = Object.entries(geneTotals).sort((a,b)=>b[1]-a[1]).slice(0, topN||allGenes.length).map(e=>e[0]);
+    const topDx      = Object.entries(dxTotals).sort((a,b)=>b[1]-a[1]).slice(0, topN||allDx.length).map(e=>e[0]);
+
+    // Build matrix
+    const matrix = {};
+    topGenes.forEach(g => { matrix[g]={};  topDx.forEach(d => {
+      matrix[g][d] = countFn(rows.filter(r=>r.gene===g && r.disease===d));
+    }); });
+    const maxVal = Math.max(1, ...topGenes.flatMap(g=>topDx.map(d=>matrix[g][d])));
+
+    const CELL=36, LPAD=120, TPAD=110, CPAD=8;
+    const W = LPAD + topDx.length*CELL + CPAD;
+    const H = TPAD + topGenes.length*CELL + CPAD;
+
+    const cells = topGenes.flatMap((g,gi)=>topDx.map((d,di)=>{
+      const v = matrix[g][d];
+      if (!v) return '';
+      const intensity = v/maxVal;
+      const bg = `rgba(37,99,235,${(0.08 + intensity*0.85).toFixed(2)})`;
+      const tx = intensity > 0.55 ? '#fff' : '#1a2332';
+      const x = LPAD + di*CELL, y = TPAD + gi*CELL;
+      return `<rect x="${x}" y="${y}" width="${CELL-2}" height="${CELL-2}" rx="3" fill="${bg}"/>
+              <text x="${x+CELL/2-1}" y="${y+CELL/2+4}" text-anchor="middle" font-size="10"
+                fill="${tx}" font-family="Calibri,Candara,sans-serif">${v}</text>`;
+    })).join('');
+
+    const gLabels = topGenes.map((g,i)=>
+      `<text x="${LPAD-6}" y="${TPAD+i*CELL+CELL/2+4}" text-anchor="end" font-size="11"
+        fill="#334155" font-family="Calibri,Candara,sans-serif">${g}</text>`).join('');
+
+    const dLabels = topDx.map((d,i)=>{
+      const label = d.length>18 ? d.slice(0,17)+'…' : d;
+      const x = LPAD + i*CELL + CELL/2;
+      return `<text x="${x}" y="${TPAD-6}" text-anchor="start" font-size="10"
+        fill="#334155" font-family="Calibri,Candara,sans-serif"
+        transform="rotate(-45,${x},${TPAD-6})">${label}</text>`;
+    }).join('');
+
+    heatmapEl.innerHTML = `
+      <svg width="${W}" height="${H}" style="min-width:${W}px">
+        ${gLabels}${dLabels}${cells}
+      </svg>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">
+        Colour intensity = ${metric === 'patients' ? 'unique patients' : 'total records'} · white = 0
+      </div>`;
+
+  } else {
+    // ── Stacked bar: gene-per-dx or dx-per-gene ───────────────────
+    heatmapEl.style.display = 'none';
+    phEl.style.display = 'none';
+    chartEl.style.display = 'block';
+
+    let primaryKeys, secondaryKeys, primaryLabel;
+    if (view === 'gene-per-dx') {
+      // x-axis = diagnoses, stacks = genes
+      const dxTotals = Object.fromEntries(allDx.map(d=>[d, countFn(rows.filter(r=>r.disease===d))]));
+      primaryKeys   = Object.entries(dxTotals).sort((a,b)=>b[1]-a[1]).slice(0, topN||allDx.length).map(e=>e[0]);
+      secondaryKeys = [...new Set(rows.filter(r=>primaryKeys.includes(r.disease)).map(r=>r.gene))];
+      primaryLabel  = 'Diagnosis';
+    } else {
+      // x-axis = genes, stacks = diagnoses
+      const geneTotals = Object.fromEntries(allGenes.map(g=>[g, countFn(rows.filter(r=>r.gene===g))]));
+      primaryKeys   = Object.entries(geneTotals).sort((a,b)=>b[1]-a[1]).slice(0, topN||allGenes.length).map(e=>e[0]);
+      secondaryKeys = [...new Set(rows.filter(r=>primaryKeys.includes(r.gene)).map(r=>r.disease))];
+      primaryLabel  = 'Gene';
+    }
+
+    // Sort secondary keys by total count
+    const secTotals = view === 'gene-per-dx'
+      ? Object.fromEntries(secondaryKeys.map(s=>[s, countFn(rows.filter(r=>r.gene===s))]))
+      : Object.fromEntries(secondaryKeys.map(s=>[s, countFn(rows.filter(r=>r.disease===s))]));
+    secondaryKeys = secondaryKeys.sort((a,b)=>(secTotals[b]||0)-(secTotals[a]||0));
+
+    const datasets = secondaryKeys.map((sk, si) => ({
+      label: sk,
+      data: primaryKeys.map(pk => {
+        const subset = view === 'gene-per-dx'
+          ? rows.filter(r=>r.disease===pk && r.gene===sk)
+          : rows.filter(r=>r.gene===pk && r.disease===sk);
+        return countFn(subset);
+      }),
+      backgroundColor: GD_PALETTE[si % GD_PALETTE.length],
+      borderWidth: 0,
+    }));
+
+    // Dynamic height: enough for all bars
+    const barH = Math.max(28, Math.min(50, 700/primaryKeys.length));
+    const chartH = Math.max(300, primaryKeys.length * barH + 60);
+    chartEl.parentElement.style.height = chartH + 'px';
+
+    destroyChart('gene-dx');
+    charts['gene-dx'] = new Chart(chartEl, {
+      type: 'bar',
+      data: { labels: primaryKeys, datasets },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} ${metric}`
+          }}
+        },
+        scales: {
+          x: { stacked:true, ticks:{color:'#94a3b8',font:{size:10,family:'Calibri,Candara,sans-serif'}}, grid:{color:'rgba(0,0,0,.06)'},
+               title:{display:true, text: metric==='patients'?'Unique patients':'Records', color:'#7a8694',font:{size:10,family:'Calibri,Candara,sans-serif'}} },
+          y: { stacked:true, ticks:{color:'#334155',font:{size:10,family:'Calibri,Candara,sans-serif'}}, grid:{display:false} }
+        }
+      }
+    });
+
+    // Custom legend
+    legendEl.innerHTML = secondaryKeys.slice(0, 40).map((sk,si)=>`
+      <span style="display:inline-flex;align-items:center;gap:4px;white-space:nowrap">
+        <span style="width:10px;height:10px;border-radius:2px;background:${GD_PALETTE[si%GD_PALETTE.length]};flex-shrink:0"></span>
+        <span style="font-family:var(--font-num);font-size:10px">${sk.length>30?sk.slice(0,29)+'…':sk}</span>
+      </span>`).join('') + (secondaryKeys.length>40?`<span style="color:var(--muted);font-size:10px">+${secondaryKeys.length-40} more</span>`:'');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PHENOTYPES OVER TIME
+// ═══════════════════════════════════════════════════════════════════
+function populatePhenoTimeSelector(sorted) {
+  const sel = document.getElementById('pheno-term-select');
+  if (!sel) return;
+  const withOnset = new Set(
+    PACKETS.flatMap(p=>(p.phenotypicFeatures||[])
+      .filter(pf=>!pf.excluded && pf.onset?.age?.iso8601duration && pf.type?.id)
+      .map(pf=>pf.type.id))
+  );
+  const infoEl = document.getElementById('pheno-time-info');
+  if (!withOnset.size && infoEl) {
+    infoEl.textContent = 'No onset ages recorded yet. Charts will appear automatically once onset data is available.';
+  }
+  sel.innerHTML = '<option value="">— select HPO term —</option>' +
+    sorted.map(h => {
+      const has = withOnset.has(h.id);
+      return `<option value="${h.id}" ${!has?'style="color:#94a3b8"':''}>
+        ${h.label}${!has?' (no onset data)':''} (n=${h.count})</option>`;
+    }).join('');
+}
+
+function buildPhenoOverTime() {
+  const termId   = document.getElementById('pheno-term-select')?.value;
+  const groupBy  = document.getElementById('pheno-group-select')?.value || 'cohort';
+  const mode     = document.getElementById('pheno-mode-select')?.value  || 'histogram';
+  const infoEl   = document.getElementById('pheno-time-info');
+  const legendEl = document.getElementById('pheno-time-legend');
+
+  if (!termId) {
+    destroyChart('pheno-time');
+    if (infoEl) infoEl.textContent='';
+    if (legendEl) legendEl.innerHTML='';
+    return;
+  }
+
+  // Collect onset records for this term
+  const records = [];
+  PACKETS.forEach(p => {
+    const sex  = p.subject?.sex || 'UNKNOWN';
+    const diag = (p.interpretations||[])[0]?.diagnosis?.disease?.label || 'Unknown';
+    (p.phenotypicFeatures||[]).forEach(pf => {
+      if (pf.excluded || pf.type?.id !== termId) return;
+      const yr = isoToYears(pf.onset?.age?.iso8601duration);
+      if (yr === null) return;
+      records.push({ age: yr, sex, diag, patientId: p.subject?.id||p.id });
+    });
+  });
+
+  const termLabel = document.getElementById('pheno-term-select').selectedOptions[0]?.text?.split(' (n=')[0] || termId;
+
+  if (!records.length) {
+    destroyChart('pheno-time');
+    if (infoEl) infoEl.textContent = 'No onset age data for this term.';
+    if (legendEl) legendEl.innerHTML='';
+    return;
+  }
+
+  if (infoEl) infoEl.textContent =
+    `${records.length} records with onset age across ${new Set(records.map(r=>r.patientId)).size} patients`;
+
+  // Group
+  const groups = {};
+  if (groupBy === 'sex') {
+    records.forEach(r => { (groups[r.sex]||(groups[r.sex]=[])).push(r); });
+  } else if (groupBy === 'diagnosis') {
+    records.forEach(r => { (groups[r.diag]||(groups[r.diag]=[])).push(r); });
+  } else {
+    groups['Cohort'] = records;
+  }
+
+  const groupNames = Object.keys(groups);
+  const calibriFont = { family:'Calibri,Candara,sans-serif', size:10 };
+  const GROUP_COLORS = GD_PALETTE;
+
+  destroyChart('pheno-time');
+
+  if (mode === 'histogram') {
+    // Stacked histogram: bin all records by 5-year windows
+    const allAges = records.map(r=>r.age);
+    const mn = Math.floor(Math.min(...allAges)/5)*5;
+    const mx = Math.ceil(Math.max(...allAges)/5)*5;
+    const labels = [];
+    for (let b=mn; b<mx; b+=5) labels.push(`${b}–${b+4}`);
+
+    const datasets = groupNames.map((name,gi)=>{
+      const bins = new Array(labels.length).fill(0);
+      groups[name].forEach(r=>{
+        const i = Math.min(Math.floor((r.age-mn)/5), bins.length-1);
+        bins[i]++;
+      });
+      return { label:name, data:bins, backgroundColor:GROUP_COLORS[gi%GROUP_COLORS.length], borderRadius:2, borderSkipped:false };
+    });
+
+    charts['pheno-time'] = new Chart(document.getElementById('chart-pheno-time'), {
+      type:'bar', data:{ labels, datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} patients`}} },
+        scales:{
+          x:{ stacked:true, ticks:{color:'#94a3b8',font:calibriFont},
+              grid:{color:'rgba(0,0,0,.06)'},
+              title:{display:true,text:'Onset age (years)',color:'#7a8694',font:calibriFont} },
+          y:{ stacked:true, ticks:{color:'#94a3b8',font:calibriFont},
+              grid:{color:'rgba(0,0,0,.06)'},
+              title:{display:true,text:'Patients',color:'#7a8694',font:calibriFont} }
+        }
+      }
+    });
+
+  } else if (mode === 'scatter') {
+    // Rug/scatter: age on x, jittered by group on y for readability
+    const datasets = groupNames.map((name,gi)=>({
+      label: name,
+      data: groups[name].map((r,i)=>({ x:r.age, y: gi + (Math.random()-0.5)*0.5 })),
+      backgroundColor: GROUP_COLORS[gi%GROUP_COLORS.length]+'99',
+      borderColor:     GROUP_COLORS[gi%GROUP_COLORS.length],
+      pointRadius:5, pointHoverRadius:7, borderWidth:1,
+    }));
+
+    charts['pheno-time'] = new Chart(document.getElementById('chart-pheno-time'), {
+      type:'scatter', data:{ datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: age ${ctx.parsed.x.toFixed(1)} yr`}} },
+        scales:{
+          x:{ ticks:{color:'#94a3b8',font:calibriFont}, grid:{color:'rgba(0,0,0,.06)'},
+              title:{display:true,text:'Onset age (years)',color:'#7a8694',font:calibriFont} },
+          y:{ ticks:{display:false}, grid:{display:false},
+              min:-0.8, max:groupNames.length-0.2 }
+        }
+      }
+    });
+
+  } else {
+    // ECDF (empirical cumulative distribution)
+    const datasets = groupNames.map((name,gi)=>{
+      const ages = groups[name].map(r=>r.age).sort((a,b)=>a-b);
+      const pts  = ages.map((a,i)=>({ x:a, y:(i+1)/ages.length*100 }));
+      return {
+        label: name,
+        data: pts,
+        borderColor: GROUP_COLORS[gi%GROUP_COLORS.length],
+        backgroundColor:'transparent',
+        borderWidth:2.5, pointRadius:0, tension:0, stepped:true,
+        type:'line',
+      };
+    });
+
+    charts['pheno-time'] = new Chart(document.getElementById('chart-pheno-time'), {
+      type:'scatter', data:{ datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.x.toFixed(1)} yr → ${ctx.parsed.y.toFixed(1)}% of cases`}} },
+        scales:{
+          x:{ ticks:{color:'#94a3b8',font:calibriFont}, grid:{color:'rgba(0,0,0,.06)'},
+              title:{display:true,text:'Onset age (years)',color:'#7a8694',font:calibriFont} },
+          y:{ min:0, max:100,
+              ticks:{color:'#94a3b8',font:calibriFont,callback:v=>v+'%'},
+              grid:{color:'rgba(0,0,0,.06)'},
+              title:{display:true,text:'Cumulative %',color:'#7a8694',font:calibriFont} }
+        }
+      }
+    });
+  }
+
+  // Legend
+  if (legendEl) {
+    legendEl.innerHTML = groupNames.map((name,gi)=>`
+      <span style="display:inline-flex;align-items:center;gap:5px">
+        <span style="width:12px;height:12px;border-radius:50%;background:${GROUP_COLORS[gi%GROUP_COLORS.length]};flex-shrink:0"></span>
+        <span style="font-family:var(--font-num)">${name}</span>
+        <span style="color:var(--muted)">(n=${groups[name].length})</span>
+      </span>`).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DISEASES
+// ═══════════════════════════════════════════════════════════════════
+function buildDiseases() {
+  const disMap = {};
+  PACKETS.forEach(p => {
+    (p.diseases||[]).forEach(d => {
+      const t = d.term;
+      if (!t?.id) return;
+      if (!disMap[t.id]) disMap[t.id] = { id:t.id, label:t.label||'—', count:0, onsets:[] };
+      disMap[t.id].count++;
+      const yr = isoToYears(d.onset?.age?.iso8601duration);
+      if (yr!==null) disMap[t.id].onsets.push(yr);
+    });
+  });
+
+  const sorted = Object.values(disMap).sort((a,b)=>b.count-a.count);
+  const top30  = sorted.slice(0,30).reverse();
+
+  document.getElementById('chart-dis-wrap').style.height = Math.max(200,top30.length*22)+'px';
+  destroyChart('dis');
+  charts.dis = new Chart(document.getElementById('chart-dis'), {
+    type:'bar',
+    data:{ labels:top30.map(d=>d.label), datasets:[{data:top30.map(d=>d.count),backgroundColor:'#60a5fa',borderRadius:3,borderSkipped:false}] },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()} patients`}}},
+      scales:{x:{ticks:{color:'#94a3b8',font:{size:10,family:"Calibri, Candara, sans-serif"}},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#334155',font:{size:10,family:"Calibri, Candara, sans-serif"}},grid:{display:false}}}
+    }
+  });
+
+  const cols = [
+    { key:'label', label:'Disease', render: r=>`<span>${r.label}</span>` },
+    { key:'id',    label:'MONDO ID', render: r=>`<span style="color:var(--muted);font-size:11px">${r.id}</span>` },
+    { key:'count', label:'Patients', render: r=>{ const pct=r.count/PACKETS.length*100; return `<div class="bar-cell"><span>${r.count.toLocaleString()}</span><div class="mini-bar-bg"><div class="mini-bar" style="width:${pct}%;background:var(--accent)"></div></div><span style="color:var(--muted)">${pct.toFixed(1)}%</span></div>`; }},
+    { key:'medOnset', label:'Median Onset', render: r=>{ const s=[...r.onsets].sort((a,b)=>a-b); return fmtYears(s.length?s[Math.floor(s.length/2)]:null); }},
+    { key:'minOnset', label:'Earliest Onset', render: r=>fmtYears(r.onsets.length?Math.min(...r.onsets):null) },
+  ];
+  renderTable('tbl-diseases', sorted, cols, {defaultSort:'count', defaultDir:'desc', searchKeys:['label','id']});
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PATIENT BROWSER
+// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// MEASUREMENTS
+// ═══════════════════════════════════════════════════════════════════
+function buildMeasurements() {
+
+  // ── Collect all measurement records ──────────────────────────────
+  const records = [];
+  PACKETS.forEach(p => {
+    const subjectId = p.subject?.id || p.id || '—';
+    const sex       = p.subject?.sex || 'UNKNOWN';
+    const diagnosis = (p.interpretations||[])[0]?.diagnosis?.disease?.label || 'Unknown';
+
+    (p.measurements || []).forEach(m => {
+      const assayId    = m.assay?.id    || '—';
+      const assayLabel = m.assay?.label || assayId;
+      const val        = m.value?.quantity?.value;
+      const unit       = m.value?.quantity?.unit?.label || '';
+      const unitId     = m.value?.quantity?.unit?.id    || '';
+
+      // Time observed: prefer age ISO duration, fall back to timestamp/date
+      const timeAge  = m.timeObserved?.age?.iso8601duration || null;
+      const timeDate = m.timeObserved?.timestamp || m.timeObserved?.date || null;
+      const timeLabel = timeAge ? fmtAge(timeAge) : (timeDate ? timeDate.slice(0,10) : '—');
+
+      // Numeric time value for plotting: decimal years if age, ms epoch if date
+      let timeVal  = null;
+      let timeType = null;
+      if (timeAge) {
+        timeVal  = isoToYears(timeAge);
+        timeType = 'age';
+      } else if (timeDate) {
+        const d = new Date(timeDate);
+        if (!isNaN(d)) { timeVal = d.getTime(); timeType = 'date'; }
+      }
+
+      if (val === undefined || val === null) return;
+      records.push({ subjectId, assayId, assayLabel, val: Number(val), unit, unitId,
+                     timeLabel, timeVal, timeType, sex, diagnosis });
+    });
+  });
+
+  // Store globally for over-time chart
+  window._measRecords = records;
+
+  // ── Group by assay ────────────────────────────────────────────────
+  const assayMap = {};
+  records.forEach(r => {
+    if (!assayMap[r.assayId]) assayMap[r.assayId] = { id:r.assayId, label:r.assayLabel, unit:r.unit, vals:[], patients: new Set() };
+    assayMap[r.assayId].vals.push(r.val);
+    assayMap[r.assayId].patients.add(r.subjectId);
+  });
+
+  const assays = Object.values(assayMap)
+    .map(a => {
+      const s = [...a.vals].sort((x,y)=>x-y);
+      const n = s.length;
+      return {
+        id: a.id, label: a.label, unit: a.unit,
+        nRecords: n,
+        nPatients: a.patients.size,
+        vals: s,
+        min:    s[0],
+        p25:    s[Math.floor(n*.25)],
+        median: s[Math.floor(n*.50)],
+        p75:    s[Math.floor(n*.75)],
+        p95:    s[Math.floor(n*.95)],
+        max:    s[n-1],
+        mean:   s.reduce((a,b)=>a+b,0)/n,
+      };
+    })
+    .sort((a,b) => b.nRecords - a.nRecords);
+
+  // ── Stat cards ────────────────────────────────────────────────────
+  const pWithMeas = new Set(records.map(r=>r.subjectId)).size;
+  document.getElementById('meas-stats').innerHTML = `
+    <div class="stat-card"><div class="val" style="color:var(--accent)">${records.length.toLocaleString()}</div><div class="lbl">Total Records</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--green)">${pWithMeas.toLocaleString()}</div><div class="lbl">Patients with Measurements</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--purple)">${assays.length.toLocaleString()}</div><div class="lbl">Unique Assay Types</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--orange)">${(records.length/Math.max(pWithMeas,1)).toFixed(1)}</div><div class="lbl">Avg Records / Patient</div></div>`;
+
+  // ── Assay overview table ──────────────────────────────────────────
+  const fmt2 = v => v !== null && v !== undefined ? Number(v).toFixed(2) : '—';
+  const assayCols = [
+    { key:'label',    label:'Assay',    render: r => `<strong>${r.label}</strong>` },
+    { key:'id',       label:'LOINC ID', render: r => `<span style="color:var(--muted);font-size:11px">${r.id}</span>` },
+    { key:'unit',     label:'Unit',     render: r => `<span style="font-size:11px">${r.unit||'—'}</span>` },
+    { key:'nPatients',label:'Patients', render: r => {
+      const pct = r.nPatients / PACKETS.length * 100;
+      return `<div class="bar-cell"><span>${r.nPatients.toLocaleString()}</span><div class="mini-bar-bg"><div class="mini-bar" style="width:${pct}%;background:var(--accent)"></div></div><span style="color:var(--muted)">${pct.toFixed(1)}%</span></div>`;
+    }},
+    { key:'nRecords', label:'Records',  render: r => r.nRecords.toLocaleString() },
+    { key:'min',      label:'Min',      render: r => `<span style="color:var(--muted)">${fmt2(r.min)}</span>` },
+    { key:'median',   label:'Median',   render: r => `<strong>${fmt2(r.median)}</strong>` },
+    { key:'mean',     label:'Mean',     render: r => fmt2(r.mean) },
+    { key:'max',      label:'Max',      render: r => `<span style="color:var(--muted)">${fmt2(r.max)}</span>` },
+    { key:'_detail',  label:'',         render: r =>
+      `<button class="btn btn-ghost" style="padding:3px 10px;font-size:10px" onclick="showAssayDetail('${r.id.replace(/'/g,"\\'")}')">Distribution ↓</button>` },
+  ];
+  renderTable('tbl-assays', assays, assayCols, { defaultSort:'nRecords', defaultDir:'desc', searchKeys:['label','id','unit'] });
+
+  // ── Box-plot style distributions for top assays ──────────────────
+  // Custom SVG box-plot renderer (no extra lib needed)
+  const TOP = Math.min(assays.length, 12);
+  const topAssays = assays.slice(0, TOP);
+
+  const PLOT_W = 580, BAR_H = 28, PAD_L = 180, PAD_R = 60, PAD_T = 16, PAD_B = 24;
+  const totalH  = PAD_T + TOP * (BAR_H + 10) + PAD_B;
+
+  if (topAssays.length === 0) {
+    document.getElementById('meas-boxplots').innerHTML = '<p class="no-data" style="padding:20px 0">No measurement data available.</p>';
+  } else {
+    // normalise each assay to [0,1] within its own range for visual only
+    const svgRows = topAssays.map((a, i) => {
+      const range = a.max - a.min || 1;
+      const norm  = v => (v - a.min) / range;
+      const x     = v => PAD_L + norm(v) * (PLOT_W - PAD_L - PAD_R);
+      const y     = PAD_T + i * (BAR_H + 10) + BAR_H / 2;
+
+      const xMin = x(a.min), xP25 = x(a.p25), xMed = x(a.median), xP75 = x(a.p75), xP95 = x(a.p95), xMax = x(a.max);
+
+      return `
+        <!-- label -->
+        <text x="${PAD_L - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#334155"
+          style="font-family:'DM Mono',monospace">${a.label.length > 26 ? a.label.slice(0,25)+'…' : a.label}</text>
+        <!-- whisker min–max -->
+        <line x1="${xMin}" y1="${y}" x2="${xMax}" y2="${y}" stroke="#cbd5e1" stroke-width="1.5"/>
+        <!-- whisker caps -->
+        <line x1="${xMin}" y1="${y-5}" x2="${xMin}" y2="${y+5}" stroke="#94a3b8" stroke-width="1.5"/>
+        <line x1="${xMax}" y1="${y-5}" x2="${xMax}" y2="${y+5}" stroke="#94a3b8" stroke-width="1.5"/>
+        <!-- 5-95 band -->
+        <rect x="${x(a.p25 < a.min ? a.min : a.p25)}" y="${y - BAR_H/2 + 4}"
+              width="${Math.max(0, xP95 - xP25)}" height="${BAR_H - 8}"
+              rx="2" fill="#bfdbfe" opacity="0.5"/>
+        <!-- IQR box -->
+        <rect x="${xP25}" y="${y - BAR_H/2 + 2}" width="${Math.max(1, xP75 - xP25)}" height="${BAR_H - 4}"
+              rx="3" fill="#60a5fa" opacity="0.8"/>
+        <!-- median line -->
+        <line x1="${xMed}" y1="${y - BAR_H/2 + 2}" x2="${xMed}" y2="${y + BAR_H/2 - 2}"
+              stroke="#1d4ed8" stroke-width="2"/>
+        <!-- unit label right -->
+        <text x="${PLOT_W - PAD_R + 6}" y="${y + 4}" font-size="9" fill="#94a3b8"
+          style="font-family:'DM Mono',monospace">${a.unit}</text>
+        <!-- value labels -->
+        <text x="${xMin - 2}" y="${y + 14}" text-anchor="middle" font-size="8" fill="#94a3b8"
+          style="font-family:'DM Mono',monospace">${fmt2(a.min)}</text>
+        <text x="${xMed}"     y="${y - BAR_H/2 - 2}" text-anchor="middle" font-size="8" fill="#1d4ed8"
+          style="font-family:'DM Mono',monospace">${fmt2(a.median)}</text>
+        <text x="${xMax + 2}" y="${y + 14}" text-anchor="middle" font-size="8" fill="#94a3b8"
+          style="font-family:'DM Mono',monospace">${fmt2(a.max)}</text>`;
+    }).join('');
+
+    document.getElementById('meas-boxplots').innerHTML = `
+      <svg width="100%" viewBox="0 0 ${PLOT_W} ${totalH}" style="overflow:visible;max-width:${PLOT_W}px">
+        <!-- legend -->
+        <rect x="${PAD_L}" y="2" width="12" height="8" rx="2" fill="#60a5fa" opacity="0.8"/>
+        <text x="${PAD_L+16}" y="10" font-size="9" fill="#64748b" style="font-family:'DM Mono',monospace">IQR (25–75th pct)</text>
+        <rect x="${PAD_L+130}" y="2" width="12" height="8" rx="2" fill="#bfdbfe" opacity="0.5"/>
+        <text x="${PAD_L+146}" y="10" font-size="9" fill="#64748b" style="font-family:'DM Mono',monospace">5–95th pct</text>
+        <line x1="${PAD_L+240}" y1="6" x2="${PAD_L+252}" y2="6" stroke="#1d4ed8" stroke-width="2"/>
+        <text x="${PAD_L+256}" y="10" font-size="9" fill="#64748b" style="font-family:'DM Mono',monospace">Median</text>
+        ${svgRows}
+      </svg>`;
+  }
+
+  // ── Interactive assay detail panel ────────────────────────────────
+  // Stores assay data for onclick access
+  window._assayRegistry = {};
+  assays.forEach(a => { window._assayRegistry[a.id] = a; });
+
+  // ── All records table ─────────────────────────────────────────────
+  const recCols = [
+    { key:'subjectId',  label:'Patient',   render: r => `<span style="color:var(--accent);font-size:11px">${r.subjectId}</span>` },
+    { key:'assayLabel', label:'Assay',     render: r => r.assayLabel },
+    { key:'assayId',    label:'LOINC ID',  render: r => `<span style="color:var(--muted);font-size:11px">${r.assayId}</span>` },
+    { key:'val',        label:'Value',     render: r => `<strong>${fmt2(r.val)}</strong>` },
+    { key:'unit',       label:'Unit',      render: r => `<span style="font-size:11px;color:var(--muted)">${r.unit||'—'}</span>` },
+    { key:'timeLabel',  label:'Time Observed', render: r =>
+      `<span style="font-size:11px;color:var(--muted)">${r.timeLabel}</span>` },
+  ];
+  renderTable('tbl-measurements', records, recCols,
+    { defaultSort:'assayLabel', defaultDir:'asc', searchKeys:['subjectId','assayLabel','assayId','unit'] });
+
+  // Populate the over-time assay selector
+  populateMeasTimeSelector(assays);
+}
+
+// ── Assay distribution detail (histogram, shown inline) ──────────────
+function showAssayDetail(assayId) {
+  const a = window._assayRegistry?.[assayId];
+  if (!a) return;
+
+  // Toggle: if same assay already open, close it
+  const existing = document.getElementById('assay-detail-panel');
+  if (existing && existing.dataset.assayId === assayId) { existing.remove(); return; }
+  if (existing) existing.remove();
+
+  // Build histogram bins (Sturges' rule for bin count)
+  const nBins = Math.min(Math.max(Math.ceil(Math.log2(a.vals.length) + 1), 8), 30);
+  const range = a.max - a.min || 1;
+  const binW  = range / nBins;
+  const bins  = Array(nBins).fill(0);
+  a.vals.forEach(v => { const i = Math.min(Math.floor((v - a.min) / binW), nBins-1); bins[i]++; });
+  const binLabels = bins.map((_,i) => Number((a.min + i*binW).toFixed(2)));
+
+  // Insert panel after the assay table card
+  const panel = document.createElement('div');
+  panel.id = 'assay-detail-panel';
+  panel.dataset.assayId = assayId;
+  panel.className = 'card';
+  panel.style.cssText = 'margin-bottom:20px;border-top:3px solid var(--accent)';
+  panel.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <h3 style="margin-bottom:2px">${a.label}
+          <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:6px">${a.id} · ${a.unit}</span>
+        </h3>
+        <div style="font-size:11px;color:var(--muted)">${a.nRecords.toLocaleString()} records across ${a.nPatients.toLocaleString()} patients</div>
+      </div>
+      <button onclick="document.getElementById('assay-detail-panel').remove()"
+        style="background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;line-height:1">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px">Value Distribution</div>
+        <div style="position:relative;height:200px"><canvas id="chart-assay-detail"></canvas></div>
+      </div>
+      <div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px">Summary Statistics</div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          ${[
+            ['N records',       a.nRecords.toLocaleString()],
+            ['N patients',      a.nPatients.toLocaleString()],
+            ['Minimum',         Number(a.min).toFixed(3)   +' '+a.unit],
+            ['5th percentile',  Number(a.vals[Math.floor(a.vals.length*.05)]).toFixed(3)+' '+a.unit],
+            ['25th percentile', Number(a.p25).toFixed(3)   +' '+a.unit],
+            ['Median',          Number(a.median).toFixed(3)+' '+a.unit],
+            ['Mean',            Number(a.mean).toFixed(3)  +' '+a.unit],
+            ['75th percentile', Number(a.p75).toFixed(3)   +' '+a.unit],
+            ['95th percentile', Number(a.p95).toFixed(3)   +' '+a.unit],
+            ['Maximum',         Number(a.max).toFixed(3)   +' '+a.unit],
+          ].map(([k,v])=>`
+            <tr>
+              <td style="padding:5px 10px;border-bottom:1px solid var(--border);color:var(--muted)">${k}</td>
+              <td style="padding:5px 10px;border-bottom:1px solid var(--border);font-weight:500;text-align:right">${v}</td>
+            </tr>`).join('')}
+        </table>
+      </div>
+    </div>`;
+
+  // Insert after the assay overview card
+  const assayCard = document.getElementById('tbl-assays').closest('.card');
+  assayCard.insertAdjacentElement('afterend', panel);
+
+  // Draw histogram
+  destroyChart('assay-detail');
+  charts['assay-detail'] = new Chart(document.getElementById('chart-assay-detail'), {
+    type: 'bar',
+    data: {
+      labels: binLabels,
+      datasets: [{ data: bins, backgroundColor: '#60a5fa', borderRadius: 2, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, tooltip:{callbacks:{
+        title: ctx => `${ctx[0].label} – ${Number(Number(ctx[0].label)+binW).toFixed(2)} ${a.unit}`,
+        label: ctx => `${ctx.raw.toLocaleString()} records`
+      }}},
+      scales: {
+        x: { ticks:{color:'#94a3b8',font:{size:9,family:"Calibri, Candara, sans-serif"},maxRotation:45}, grid:{color:'rgba(0,0,0,.06)'},
+             title:{display:true,text:a.unit,color:'#94a3b8',font:{size:10}} },
+        y: { ticks:{color:'#94a3b8',font:{size:10,family:"Calibri, Candara, sans-serif"}}, grid:{color:'rgba(0,0,0,.06)'},
+             title:{display:true,text:'Records',color:'#94a3b8',font:{size:10}} }
+      }
+    }
+  });
+
+  // Scroll panel into view
+  panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MEASUREMENTS OVER TIME
+// ═══════════════════════════════════════════════════════════════════
+
+// Populate assay selector — shows all assays; those without time data are noted
+function populateMeasTimeSelector(assays) {
+  const sel = document.getElementById('time-assay-select');
+  if (!sel) return;
+  const withTime    = new Set((window._measRecords||[]).filter(r=>r.timeVal!==null).map(r=>r.assayId));
+  const hasAny      = withTime.size > 0;
+
+  sel.innerHTML = `<option value="">— select assay —</option>` +
+    assays.map(a => {
+      const hasT = withTime.has(a.id);
+      const note = !hasAny ? '' : (hasT ? '' : ' (no timestamps)');
+      return `<option value="${a.id}" ${!hasT && hasAny ? 'style="color:#94a3b8"' : ''}>${a.label}${note} (${a.nRecords})</option>`;
+    }).join('');
+
+  // Show a notice if no timestamps at all
+  const infoEl = document.getElementById('meas-time-info');
+  if (infoEl && !hasAny) {
+    infoEl.textContent = 'No time-stamped measurements found yet. Once timeObserved is added to your data, charts will appear here automatically.';
+  }
+}
+
+function buildMeasOverTime() {
+  const assayId  = document.getElementById('time-assay-select')?.value;
+  const groupBy  = document.getElementById('time-group-select')?.value  || 'cohort';
+  const mode     = document.getElementById('time-mode-select')?.value   || 'scatter';
+  const infoEl   = document.getElementById('meas-time-info');
+  const legendEl = document.getElementById('meas-time-legend');
+
+  if (!assayId) {
+    destroyChart('meas-time');
+    if (infoEl) infoEl.textContent = '';
+    if (legendEl) legendEl.innerHTML = '';
+    return;
+  }
+
+  const assay   = window._assayRegistry?.[assayId];
+  const records = (window._measRecords || [])
+    .filter(r => r.assayId === assayId && r.timeVal !== null)
+    .sort((a,b) => a.timeVal - b.timeVal);
+
+  if (!records.length) {
+    destroyChart('meas-time');
+    if (infoEl) infoEl.textContent = 'No time-stamped records available for this assay.';
+    if (legendEl) legendEl.innerHTML = '';
+    return;
+  }
+
+  if (infoEl) infoEl.textContent =
+    `${records.length.toLocaleString()} records across ${new Set(records.map(r=>r.subjectId)).size} patients · time axis: ${records[0].timeType === 'age' ? 'age (years)' : 'calendar date'}`;
+
+  // ── Grouping ─────────────────────────────────────────────────────
+  const GROUP_COLORS = [
+    '#2563eb','#16a34a','#dc2626','#d97706','#7c3aed',
+    '#0891b2','#db2777','#65a30d','#ea580c','#6366f1'
+  ];
+
+  let groups = {};
+  if (groupBy === 'sex') {
+    records.forEach(r => {
+      const key = r.sex || 'UNKNOWN';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(r);
+    });
+  } else if (groupBy === 'diagnosis') {
+    records.forEach(r => {
+      const key = r.diagnosis || 'Unknown';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(r);
+    });
+  } else {
+    groups['Cohort'] = records;
+  }
+
+  const groupNames  = Object.keys(groups);
+  const isAge       = records[0].timeType === 'age';
+  const xLabel      = isAge ? 'Age (years)' : 'Date';
+
+  // ── Build datasets ────────────────────────────────────────────────
+  const datasets = [];
+
+  groupNames.forEach((name, gi) => {
+    const color = GROUP_COLORS[gi % GROUP_COLORS.length];
+    const pts   = groups[name].map(r => ({ x: r.timeVal, y: r.val }));
+
+    if (mode === 'scatter' || mode === 'both') {
+      datasets.push({
+        label: name,
+        type: 'scatter',
+        data: pts,
+        backgroundColor: color + '55',
+        borderColor: color,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 1,
+        showLine: false,
+        _group: name, _color: color
+      });
+    }
+
+    if (mode === 'median' || mode === 'both') {
+      // Bin by fixed-width windows and compute median per bin
+      const xs = pts.map(p=>p.x);
+      const xMin = Math.min(...xs), xMax = Math.max(...xs);
+      const span = xMax - xMin || 1;
+      // ~15 bins across the range
+      const binW = span / Math.min(15, pts.length);
+      const bins = {};
+      pts.forEach(p => {
+        const b = Math.floor((p.x - xMin) / binW);
+        if (!bins[b]) bins[b] = [];
+        bins[b].push(p.y);
+      });
+      const medLine = Object.entries(bins)
+        .sort((a,b) => +a[0] - +b[0])
+        .map(([b, vals]) => {
+          const s = [...vals].sort((a,c)=>a-c);
+          return { x: xMin + (+b + 0.5) * binW, y: s[Math.floor(s.length/2)] };
+        });
+
+      datasets.push({
+        label: name + ' (median)',
+        type: 'line',
+        data: medLine,
+        borderColor: color,
+        backgroundColor: 'transparent',
+        borderWidth: 2.5,
+        pointRadius: 3,
+        tension: 0.35,
+        fill: false,
+        _group: name, _color: color
+      });
+    }
+  });
+
+  // ── Chart ─────────────────────────────────────────────────────────
+  destroyChart('meas-time');
+  const calibriFont = { family: 'Calibri, Candara, sans-serif', size: 10 };
+
+  // Format x-tick: age → "X yr", date → short locale date
+  const xTickCallback = val => isAge
+    ? `${val.toFixed(1)} yr`
+    : new Date(val).toLocaleDateString('en-GB', { year:'numeric', month:'short' });
+
+  charts['meas-time'] = new Chart(document.getElementById('chart-meas-time'), {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const xFmt = isAge
+                ? `${ctx.parsed.x.toFixed(1)} yr`
+                : new Date(ctx.parsed.x).toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'numeric' });
+              return `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(2)} ${assay?.unit||''} @ ${xFmt}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          title: { display: true, text: xLabel, color: '#7a8694', font: calibriFont },
+          ticks: {
+            color: '#94a3b8', font: calibriFont,
+            callback: xTickCallback,
+            maxTicksLimit: 12
+          },
+          grid: { color: 'rgba(0,0,0,.06)' }
+        },
+        y: {
+          title: { display: true, text: `${assay?.label||''} (${assay?.unit||''})`, color: '#7a8694', font: calibriFont },
+          ticks: { color: '#94a3b8', font: calibriFont },
+          grid:  { color: 'rgba(0,0,0,.06)' }
+        }
+      }
+    }
+  });
+
+  // ── Custom legend ─────────────────────────────────────────────────
+  const seen = new Set();
+  if (legendEl) {
+    legendEl.innerHTML = datasets
+      .filter(d => { if (seen.has(d._group)) return false; seen.add(d._group); return true; })
+      .map(d => `<span style="display:inline-flex;align-items:center;gap:5px">
+        <span style="width:12px;height:12px;border-radius:50%;background:${d._color};flex-shrink:0"></span>
+        <span style="font-family:var(--font-num)">${d._group}</span>
+      </span>`).join('');
+  }
+}
+
+let browserFiltered = [];
+let browserPage     = 0;
+const BROWSER_PER_PAGE = 50;
+
+function buildBrowser() {
+  browserFiltered = [...PACKETS];
+  browserPage = 0;
+  renderBrowserList();
+}
+function filterBrowser() {
+  const q = document.getElementById('browser-search').value.toLowerCase();
+  browserFiltered = PACKETS.filter(p => {
+    if (!q) return true;
+    const id = p.subject?.id||'';
+    const dx = (p.interpretations||[]).map(i=>i.diagnosis?.disease?.label||'').join(' ');
+    return id.toLowerCase().includes(q) || dx.toLowerCase().includes(q);
+  });
+  browserPage = 0;
+  renderBrowserList();
+}
+function renderBrowserList() {
+  const start = browserPage * BROWSER_PER_PAGE;
+  const page  = browserFiltered.slice(start, start + BROWSER_PER_PAGE);
+  const totalPages = Math.ceil(browserFiltered.length / BROWSER_PER_PAGE);
+
+  document.getElementById('browser-list').innerHTML = page.length ? page.map((p,i) => {
+    const s   = p.subject||{};
+    const age = fmtAge(s.timeAtLastEncounter?.age?.iso8601duration);
+    const dx  = (p.interpretations||[]).map(i=>i.diagnosis?.disease?.label).filter(Boolean)[0]||'—';
+    const sexIcon = s.sex==='FEMALE'?'♀':s.sex==='MALE'?'♂':'?';
+    return `<div class="patient-row" onclick="selectPatient('${p.id||i}')">
+      <span class="patient-id">${s.id||p.id||'—'}</span>
+      <span class="patient-meta">${sexIcon} · ${age}</span>
+      <span class="patient-dx">${dx}</span>
+    </div>`;
+  }).join('') : '<div class="empty-state">No patients match</div>';
+
+  // pagination
+  const pg = document.getElementById('browser-pagination');
+  let html = `<span>${browserFiltered.length.toLocaleString()} patients</span>`;
+  html += `<button class="pg-btn" onclick="changeBrowserPage(${browserPage-1})" ${browserPage===0?'disabled':''}>‹</button>`;
+  const range = getPgRange(browserPage, totalPages);
+  range.forEach(p => {
+    if (p === '…') html += `<span style="color:var(--muted);padding:0 4px">…</span>`;
+    else html += `<button class="pg-btn ${p===browserPage?'active':''}" onclick="changeBrowserPage(${p})">${p+1}</button>`;
+  });
+  html += `<button class="pg-btn" onclick="changeBrowserPage(${browserPage+1})" ${browserPage>=totalPages-1?'disabled':''}>›</button>`;
+  pg.innerHTML = html;
+}
+function getPgRange(current, total) {
+  if (total <= 7) return [...Array(total).keys()];
+  const r = new Set([0, total-1, current, current-1, current+1].filter(p=>p>=0&&p<total));
+  const sorted = [...r].sort((a,b)=>a-b);
+  const result = [];
+  for (let i=0;i<sorted.length;i++) {
+    if (i>0 && sorted[i]-sorted[i-1]>1) result.push('…');
+    result.push(sorted[i]);
+  }
+  return result;
+}
+function changeBrowserPage(p) { browserPage=p; renderBrowserList(); }
+
+function selectPatient(id) {
+  document.querySelectorAll('.patient-row').forEach(r=>r.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const p = PACKETS.find(pk=>(pk.subject?.id||pk.id)==id) || PACKETS.find(pk=>String(pk.id)==String(id));
+  if (!p) return;
+  renderPatientDetail(p);
+}
+
+function renderPatientDetail(p) {
+  const s = p.subject||{};
+  const age = fmtAge(s.timeAtLastEncounter?.age?.iso8601duration);
+  const dob = s.dateOfBirth ? new Date(s.dateOfBirth).toLocaleDateString('en-GB',{year:'numeric',month:'short'}) : '—';
+
+  // diagnoses
+  const dxHtml = (p.interpretations||[]).map(interp => {
+    const dx = interp.diagnosis;
+    const genes = (dx?.genomicInterpretations||[]).map(gi=>{
+      const vd   = gi.variantInterpretation?.variationDescriptor;
+      const gene = vd?.geneContext || gi.gene;
+      const sym  = gene?.symbol;
+      const hgvs = vd?.expressions?.[0]?.value || '';
+      const acmg = gi.variantInterpretation?.acmgPathogenicityClassification || '';
+      const col  = {PATHOGENIC:'red',LIKELY_PATHOGENIC:'orange',UNCERTAIN_SIGNIFICANCE:'muted',LIKELY_BENIGN:'green',BENIGN:'blue'}[acmg]||'muted';
+      if (!sym) return '';
+      const hgvsSpan = hgvs ? `<span style="font-size:10px;color:var(--muted)">${hgvs}</span> ` : '';
+      const acmgBadge = acmg ? `<span class="badge badge-${col}" style="font-size:9px">${acmg.replace(/_/g,' ')}</span>` : '';
+      const hgncSpan = gene.valueId ? `<span style="font-size:10px;color:var(--muted)"> · ${gene.valueId}</span>` : '';
+      return `<div class="detail-row"><span class="key">${sym}${hgncSpan}</span><span class="val">${hgvsSpan}${acmgBadge}</span></div>`;
+    }).join('');
+    const statusCol = {SOLVED:'green',IN_PROGRESS:'orange',UNSOLVED:'red'}[interp.progressStatus]||'muted';
+    return `<div class="detail-row"><span class="key" style="font-weight:500">${dx?.disease?.label||'—'}</span><span class="val"><span class="badge badge-${statusCol}">${interp.progressStatus||'—'}</span></span></div>${genes}`;
+  }).join('') || '<span class="no-data">No interpretations</span>';
+
+  // phenotypes
+  const presentFeatures  = (p.phenotypicFeatures||[]).filter(pf => !pf.excluded);
+  const excludedFeatures = (p.phenotypicFeatures||[]).filter(pf =>  pf.excluded);
+  const hpoHtml = [
+    ...presentFeatures.map(pf => {
+      const sev = pf.severity?.label||'';
+      const onset = pf.onset?.age?.iso8601duration ? ` · onset ${fmtAge(pf.onset.age.iso8601duration)}` : '';
+      return `<span class="hpo-chip" title="${sev}${onset}">${pf.type?.label||pf.type?.id}</span>`;
+    }),
+    ...(excludedFeatures.length ? [`<span style="display:block;font-size:10px;color:var(--muted);margin:6px 0 2px">Excluded:</span>`] : []),
+    ...excludedFeatures.map(pf =>
+      `<span class="hpo-chip absent" title="Excluded">${pf.type?.label||pf.type?.id}</span>`)
+  ].join('') || '<span class="no-data">None recorded</span>';
+
+  // measurements
+  const measHtml = (p.measurements||[]).map(m=>`
+    <div class="detail-row">
+      <span class="key">${m.assay?.label||m.assay?.id}</span>
+      <span class="val">${m.value?.quantity?.value} <span style="color:var(--muted);font-size:10px">${m.value?.quantity?.unit?.label||''}</span> <span style="color:var(--muted);font-size:10px">@ ${fmtAge(m.timeObserved?.age?.iso8601duration)}</span></span>
+    </div>`).join('') || '<span class="no-data">No measurements</span>';
+
+  // diseases block
+  const disHtml = (p.diseases||[]).map(d=>`
+    <div class="detail-row">
+      <span class="key">${d.term?.label||d.term?.id}</span>
+      <span class="val" style="color:var(--muted);font-size:11px">${d.onset?.age?.iso8601duration ? 'onset '+fmtAge(d.onset.age.iso8601duration) : '—'}</span>
+    </div>`).join('') || '<span class="no-data">No diseases recorded</span>';
+
+  document.getElementById('browser-detail').innerHTML = `
+    <h3>${s.id||p.id||'Patient'}</h3>
+    <div style="color:var(--muted);font-size:11px;margin-bottom:4px">${s.vitalStatus?.status||''}</div>
+
+    <div class="detail-section">
+      <h4>Subject</h4>
+      <div class="detail-row"><span class="key">Date of Birth</span><span class="val">${dob}</span></div>
+      <div class="detail-row"><span class="key">Age at last encounter</span><span class="val">${age}</span></div>
+      <div class="detail-row"><span class="key">Sex</span><span class="val">${s.sex||'—'}</span></div>
+      <div class="detail-row"><span class="key">Gender</span><span class="val">${s.gender?.label||'—'}</span></div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Diagnosis &amp; Variants</h4>
+      ${dxHtml}
+    </div>
+
+    <div class="detail-section">
+      <h4>Diseases</h4>
+      ${disHtml}
+    </div>
+
+    <div class="detail-section">
+      <h4>Phenotypic Features (${presentFeatures.length} present · ${excludedFeatures.length} excluded)</h4>
+      <div style="margin-top:4px">${hpoHtml}</div>
+    </div>
+
+    <div class="detail-section">
+      <h4>Measurements (${(p.measurements||[]).length})</h4>
+      ${measHtml}
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// GENERIC SORTABLE/SEARCHABLE TABLE
+// ═══════════════════════════════════════════════════════════════════
+
+// Registry: keyed by containerId, stores data/cols/opts/state for each table.
+// This is defined once — the global handler functions below look up the right
+// table by ID instead of relying on closures (which caused every table's
+// sort/search/page to re-render whichever table was registered last).
+const tableRegistry = {};
+
+function renderTable(containerId, data, cols, opts={}) {
+  const { defaultSort='', defaultDir='asc', searchKeys=[], rowsOptions=[25,50,100,250] } = opts;
+
+  // Register (or re-register on rebuild) this table's data + config
+  if (!tableRegistry[containerId]) {
+    tableRegistry[containerId] = {
+      data, cols, opts, searchKeys, rowsOptions,
+      state: { sortKey: defaultSort, sortDir: defaultDir, page: 0, rows: rowsOptions[0], search: '' }
+    };
+  } else {
+    // keep state but refresh data/cols in case cohort was reloaded
+    tableRegistry[containerId].data = data;
+    tableRegistry[containerId].cols = cols;
+    tableRegistry[containerId].opts = opts;
+    tableRegistry[containerId].searchKeys = searchKeys;
+    tableRegistry[containerId].rowsOptions = rowsOptions;
+  }
+
+  _refreshTable(containerId);
+}
+
+function _refreshTable(containerId) {
+  const reg = tableRegistry[containerId];
+  if (!reg) return;
+  const { data, cols, searchKeys, rowsOptions } = reg;
+  const st = reg.state;
+
+  const getVal = (row, key) => {
+    const v = row[key];
+    if (v===undefined||v===null) return '';
+    if (typeof v==='number') return v;
+    return String(v).toLowerCase().replace(/<[^>]+>/g,'');
+  };
+
+  let filtered = data;
+  if (st.search) {
+    const q = st.search.toLowerCase();
+    filtered = data.filter(r => searchKeys.some(k => String(r[k]||'').toLowerCase().includes(q)));
+  }
+  if (st.sortKey) {
+    filtered = [...filtered].sort((a,b) => {
+      const av = getVal(a, st.sortKey), bv = getVal(b, st.sortKey);
+      if (typeof av==='number'&&typeof bv==='number') return st.sortDir==='asc'?av-bv:bv-av;
+      return st.sortDir==='asc'?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));
+    });
+  }
+
+  const total      = filtered.length;
+  const start      = st.page * st.rows;
+  const paged      = filtered.slice(start, start + st.rows);
+  const totalPages = Math.ceil(total / st.rows);
+
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = `
+    <div class="table-controls">
+      <input class="search-box" placeholder="Search…" value="${st.search}" oninput="tableSearch('${containerId}',this.value)">
+      <select class="rows-select" onchange="tableRows('${containerId}',this.value)">
+        ${rowsOptions.map(n=>`<option value="${n}" ${n===st.rows?'selected':''}>${n} rows</option>`).join('')}
+      </select>
+      <span style="color:var(--muted);font-size:11px;margin-left:auto">${total.toLocaleString()} entries</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>${cols.map(c=>`<th onclick="tableSort('${containerId}','${c.key}')" class="${st.sortKey===c.key?(st.sortDir==='asc'?'sort-asc':'sort-desc'):''}">${c.label}</th>`).join('')}</tr></thead>
+        <tbody>${paged.map(r=>`<tr>${cols.map(c=>`<td>${c.render(r)}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table>
+    </div>
+    <div class="pagination">
+      <span>${total.toLocaleString()} entries</span>
+      <button class="pg-btn" onclick="tablePage('${containerId}',${st.page-1})" ${st.page===0?'disabled':''}>‹</button>
+      ${getPgRange(st.page,totalPages).map(p=>p==='…'?`<span style="color:var(--muted);padding:0 4px">…</span>`:`<button class="pg-btn ${p===st.page?'active':''}" onclick="tablePage('${containerId}',${p})">${p+1}</button>`).join('')}
+      <button class="pg-btn" onclick="tablePage('${containerId}',${st.page+1})" ${st.page>=totalPages-1?'disabled':''}>›</button>
+    </div>`;
+}
+
+// ── Single set of global handlers — look up table by ID, never use closures ──
+function tableSort(id, key) {
+  const reg = tableRegistry[id]; if (!reg) return;
+  const st = reg.state;
+  if (st.sortKey===key) st.sortDir = st.sortDir==='asc'?'desc':'asc';
+  else { st.sortKey=key; st.sortDir='asc'; }
+  st.page=0;
+  _refreshTable(id);
+}
+function tableSearch(id, val) {
+  const reg = tableRegistry[id]; if (!reg) return;
+  reg.state.search=val; reg.state.page=0;
+  _refreshTable(id);
+}
+function tableRows(id, val) {
+  const reg = tableRegistry[id]; if (!reg) return;
+  reg.state.rows=parseInt(val); reg.state.page=0;
+  _refreshTable(id);
+}
+function tablePage(id, p) {
+  const reg = tableRegistry[id]; if (!reg) return;
+  reg.state.page=p;
+  _refreshTable(id);
+}
+
+function destroyChart(key) { if(charts[key]) { charts[key].destroy(); delete charts[key]; } }
+
+// ── Tabs ──
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  // lazy resize charts
+  setTimeout(()=>Object.values(charts).forEach(c=>c.resize?.()), 50);
+}
+</script>
+
+
+</body></html>
