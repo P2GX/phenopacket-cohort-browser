@@ -90,17 +90,6 @@ Interactive controls (dropdowns that recompute) call Python through
 `callApi('my_function', {...})` — register the function in `API` in
 `__init__.py` (see the Gene × Diagnosis explorer for a worked example).
 
-## Deployment (one-time setup)
-
-1. Create a **public** GitHub repository and push this code to `main`.
-2. In the repo: **Settings → Pages → Build and deployment → Source =
-   "GitHub Actions"**.
-3. Edit `app/js/config.js` → set `REPO_URL` to your repo URL; push.
-4. The site goes live at
-   `https://<user>.github.io/phenopacket-cohort-browser/`
-   and **redeploys automatically on every push to `main`** (tests must pass
-   first — a failing test blocks the deploy).
-
 ## Releases & version history
 
 - Update `CHANGELOG.md` (users see it on the **About** tab) and
