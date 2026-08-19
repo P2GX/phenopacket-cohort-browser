@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 200" role="img" aria-label="Phenopacket Cohort Browser logo">
+  <defs>
+    <!-- pointy-top hexagon, R=92 -->
+    <polygon id="hexOuter" points="0,-92 -79.7,-46 -79.7,46 0,92 79.7,46 79.7,-46"/>
+    <!-- isometric cube + wrapped P, traced from the original phenopacket logo -->
+    <g id="cube">
+      <polygon points="-59.4,-34.3 0,-68.6 59.4,-34.3 0,0" fill="#F7E77A"/>
+      <polygon points="-59.4,-34.3 0,0 0,68.6 -59.4,34.3" fill="#EAB81E"/>
+      <polygon points="0,0 59.4,-34.3 59.4,34.3 0,68.6" fill="#E3A923"/>
+      <path d="M -33.75 45.6 L -33.75 -19.6 L 0 -42 L 35.1 -18.7 L 35.1 19.1 L 0 41.6 L -33.75 20"
+            fill="none" stroke="#F8F4DC" stroke-width="8.2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <!-- cube as line art (for the fading cohort trail) -->
+    <g id="cubeLines" fill="none" stroke="#F8F4DC" stroke-width="4.5" stroke-linejoin="round">
+      <polygon points="0,-68.6 -59.4,-34.3 -59.4,34.3 0,68.6 59.4,34.3 59.4,-34.3"/>
+      <path d="M0 0 L-59.4 -34.3 M0 0 L59.4 -34.3 M0 0 L0 68.6"/>
+    </g>
+    <!-- full-colour phenopacket badge -->
+    <g id="badge">
+      <use href="#hexOuter" fill="#057E96"/>
+      <use href="#cube" transform="translate(0,-3.3)"/>
+    </g>
+    <!-- ghost badge for the cohort trail -->
+    <g id="ghost">
+      <use href="#hexOuter" fill="#057E96"/>
+      <use href="#cubeLines" transform="translate(0,-3.3)"/>
+    </g>
+  </defs>
+
+  <!-- cohort trail (fading copies = many phenopackets) -->
+  <use href="#ghost" transform="translate(314,100)" opacity="0.10"/>
+  <use href="#ghost" transform="translate(274,100)" opacity="0.20"/>
+  <use href="#ghost" transform="translate(226,100)" opacity="0.34"/>
+  <use href="#ghost" transform="translate(170,100)" opacity="0.50"/>
+
+  <!-- lead phenopacket -->
+  <use href="#badge" transform="translate(110,100)"/>
+
+  <!-- magnifier = the browser, looking into the cohort -->
+  <g>
+    <circle cx="300" cy="138" r="30" fill="#FFFFFF" fill-opacity="0.88"
+            stroke="#04586A" stroke-width="9"/>
+    <line x1="322" y1="160" x2="350" y2="188" stroke="#04586A"
+          stroke-width="12" stroke-linecap="round"/>
+    <!-- tiny cohort statistics inside the lens -->
+    <g fill="#EAB81E">
+      <rect x="286" y="134" width="7" height="16" rx="1.5"/>
+      <rect x="296" y="124" width="7" height="26" rx="1.5"/>
+      <rect x="306" y="129" width="7" height="21" rx="1.5"/>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <g font-family="'Avenir Next','Helvetica Neue',Helvetica,Arial,sans-serif">
+    <text x="408" y="92" font-size="47" font-weight="600" fill="#057E96"
+          letter-spacing="0.5">Phenopacket</text>
+    <text x="408" y="146" font-size="47" font-weight="600" fill="#D69216"
+          letter-spacing="0.5">Cohort Browser</text>
+  </g>
+</svg>

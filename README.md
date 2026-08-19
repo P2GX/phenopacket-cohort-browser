@@ -1,6 +1,24 @@
 <p align="center">
-  <img src="logo.png" alt="Phenopacket Cohort Browser" width="640">
+  <img src="docs/logo/logo.png" alt="Phenopacket Cohort Browser" width="640">
 </p>
+
+<p align="center">
+  <a href="https://p2gx.github.io/phenopacket-cohort-browser/">
+    <img alt="Live app" src="https://img.shields.io/badge/live%20app-p2gx.github.io-057E96?logo=githubpages&logoColor=white"></a>
+  <a href="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/ci.yml/badge.svg?branch=master"></a>
+  <a href="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/deploy.yml">
+    <img alt="Deploy" src="https://github.com/P2GX/phenopacket-cohort-browser/actions/workflows/deploy.yml/badge.svg?branch=master"></a>
+  <a href="https://img.shields.io/badge/privacy-data%20never%20leaves%20your%20browser-2EA043">
+    <img alt="Privacy" src="https://img.shields.io/badge/privacy-data%20never%20leaves%20your%20browser-2EA043"></a>
+  <a href="LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/P2GX/phenopacket-cohort-browser?color=E3A923"></a>
+</p>
+
+<h3 align="center">
+  ▶&nbsp;<a href="https://p2gx.github.io/phenopacket-cohort-browser/">Open the Cohort Browser</a>&nbsp;—
+  no install, no upload: drop your phenopacket JSON files and explore.
+</h3>
 
 A privacy-preserving cohort explorer for [GA4GH phenopackets](https://phenopacket-schema.readthedocs.io/).
 Drop phenopacket JSON files into the page and browse demographics, diagnoses,
@@ -9,7 +27,7 @@ genes, phenotypic features, diseases, measurements and individual patients —
 
 The descriptive statistics are plain **Python** (`app/py/cohort_stats/`),
 executed in the browser through [Pyodide](https://pyodide.org) (Python
-compiled to WebAssembly). Edit a Python function, push to `main`, and the
+compiled to WebAssembly). Edit a Python function, push, and the
 live site updates automatically.
 
 ## Quick start (local)
