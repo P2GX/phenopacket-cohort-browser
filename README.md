@@ -17,6 +17,7 @@
 
 <h3 align="center">
   ▶&nbsp;<a href="https://p2gx.github.io/phenopacket-cohort-browser/">Open the Cohort Browser</a>&nbsp;—
+  
   no install, no upload: drop your phenopacket JSON files and explore.
 </h3>
 
