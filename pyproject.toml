@@ -1,0 +1,17 @@
+[project]
+name = "cohort-stats"
+version = "0.1.0"
+description = "Descriptive statistics for phenopacket cohorts (runs in CPython and in the browser via Pyodide)"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["app/py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
