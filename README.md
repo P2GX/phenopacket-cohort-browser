@@ -1,5 +1,9 @@
 # Phenopacket Cohort Browser
 
+<p align="center">
+  <img src="logo.png" alt="Phenopacket Cohort Browser" width="640">
+</p>
+
 A privacy-preserving cohort explorer for [GA4GH phenopackets](https://phenopacket-schema.readthedocs.io/).
 Drop phenopacket JSON files into the page and browse demographics, diagnoses,
 genes, phenotypic features, diseases, measurements and individual patients —
