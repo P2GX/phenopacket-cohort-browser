@@ -18,7 +18,7 @@
   no install, no upload: drop your phenopacket JSON files and explore.
 </h3>
 
-A **privacy-preserving** cohort explorer for [GA4GH phenopackets](https://phenopacket-schema.readthedocs.io/).
+A **privacy-preserving** cohort browser for [GA4GH phenopackets](https://phenopacket-schema.readthedocs.io/).
 Drop phenopacket JSON files into the page and browse demographics, diagnoses,
 genes, phenotypic features, diseases, measurements and individual patients —
 **all statistics run inside the browser; no data is ever uploaded.**
@@ -106,7 +106,7 @@ in `utils.py` — every tab picks it up. Add a test in `tests/`, push, done.
 
 Interactive controls (dropdowns that recompute) call Python through
 `callApi('my_function', {...})` — register the function in `API` in
-`__init__.py` (see the Gene × Diagnosis explorer for a worked example).
+`__init__.py` (see the Gene × Diagnosis browser for a worked example).
 
 ## Releases & version history
 
