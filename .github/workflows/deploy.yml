@@ -35,6 +35,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify site is complete
+        run: |
+          test -f app/vendor/chart.umd.min.js
+          test -f app/vendor/pyodide/pyodide.js
+          test -f app/vendor/pyodide/pyodide.asm.wasm
+          test -f app/vendor/fonts/fonts.css
+
       - name: Assemble site
         run: |
           cp CHANGELOG.md app/CHANGELOG.md   # About tab reads it
