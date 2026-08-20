@@ -15,9 +15,10 @@ let readyPromise = null;
 
 async function detectBase() {
   try {
-    // GET (not HEAD) so the response lands in the HTTP cache and the real
-    // <script> load that follows is served from cache.
-    const res = await fetch(LOCAL_BASE + 'pyodide.js', { cache: 'force-cache' });
+    // cache: 'no-cache' revalidates with the server, so a previously-cached
+    // 404 (e.g. from before vendor/pyodide/ was deployed) can never wedge the
+    // probe into the CDN fallback.
+    const res = await fetch(LOCAL_BASE + 'pyodide.js', { method: 'HEAD', cache: 'no-cache' });
     if (res.ok) return LOCAL_BASE;
   } catch (_) { /* fall through to CDN */ }
   return CDN_BASE;
