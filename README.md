@@ -67,7 +67,7 @@ app/                     ← everything that gets deployed (the website)
   py/manifest.json       list of Python files the browser loads
   examples/              40 synthetic phenopackets (no real data)
   vendor/chart.umd.min.js
-  version.json           version shown in the app — bump on release
+  version.json           version shown in the app (stamped from the git tag by CI)
   sw.js                  offline support (caches app + Python runtime)
 tests/                   pytest suite for cohort_stats
 tools/
@@ -75,7 +75,7 @@ tools/
   build_offline.py       build the fully-offline zip bundle
 .github/workflows/
   ci.yml                 lint + tests on every push / PR
-  deploy.yml             tests → deploy app/ to GitHub Pages on push to main
+  deploy.yml             tests → deploy app/ to GitHub Pages on push to master
   offline-bundle.yml     attach offline zip to GitHub releases
 CHANGELOG.md             version history — shown to users on the About tab
 ```
@@ -102,7 +102,8 @@ in `utils.py` — every tab picks it up. Add a test in `tests/`, push, done.
 2. **JS** — create `app/js/tabs/mytab.js` (copy `diseases.js`, the smallest
    example) and register it in `app/js/tabs/index.js`.
 
-3. Add a line to `CHANGELOG.md`, bump `app/version.json`, push to `main`.
+3. Add a line to `CHANGELOG.md` and push — the deployed site updates
+   automatically (the shown version is stamped from the latest git tag).
 
 Interactive controls (dropdowns that recompute) call Python through
 `callApi('my_function', {...})` — register the function in `API` in
@@ -110,22 +111,70 @@ Interactive controls (dropdowns that recompute) call Python through
 
 ## Releases & version history
 
-- Update `CHANGELOG.md` (users see it on the **About** tab) and
-  `app/version.json` with every meaningful change.
-- For a tagged release: `git tag v0.2.0 && git push --tags`, then create a
-  GitHub release — CI attaches the offline bundle automatically.
+- Update `CHANGELOG.md` with every meaningful change — users see it on the
+  **About** tab. The version number itself is stamped automatically from the
+  latest git tag at build time.
+- For a tagged release: `git tag v0.1.2 && git push origin v0.1.2`, then
+  publish a GitHub release for that tag — CI attaches the offline bundle
+  automatically.
 
-## Privacy & offline use
+## Run it locally / offline
 
-- **Nothing is uploaded, ever.** Files are read with the browser's File API
-  and analysed by Python-in-WebAssembly locally. The GitHub Pages server
-  only serves the static app code. Hosting the viewer publicly does **not**
-  put any patient data online.
-- **Offline after first visit** — the service worker caches the app and the
-  Python runtime, so the site keeps working without a connection.
-- **Fully air-gapped use** — download `cohort-explorer-offline.zip` from the
-  latest GitHub release (or run `python tools/build_offline.py`). It bundles
-  the Python runtime and starts with a double-click; no internet required.
+Three ways, from easiest to most isolated:
+
+1. **Install the web app (recommended for clinicians).** Open the
+   [live site](https://p2gx.github.io/phenopacket-cohort-browser/) once, then
+   click **Install** (Chrome/Edge — icon at the right end of the address bar)
+   or **File → Add to Dock** (Safari, macOS). The Cohort Browser becomes a
+   normal app icon and keeps working **fully offline** — the Python runtime
+   and the example cohort are cached on the first visit. No security
+   warnings, and updates arrive automatically on the next online launch.
+
+2. **Offline bundle (for air-gapped machines).** Download
+   `cohort-explorer-offline.zip` from the latest
+   [Release](../../releases/latest) (or build it yourself with
+   `python tools/build_offline.py`), unzip it, then:
+
+   - **macOS:** double-click `START_MAC.command`.
+     *First time only:* macOS warns that Apple "could not verify" the script —
+     this project is free and open-source and not notarized by Apple, so this
+     warning is expected. Click **Done**, open
+     **System Settings → Privacy & Security**, scroll down to
+     *"START_MAC.command was blocked"*, click **Open Anyway** and confirm
+     once. Every later start is a normal double-click.
+     (On macOS 14 or older, right-click → **Open** also works.)
+   - **Windows:** double-click `START_WINDOWS.bat`. If a blue SmartScreen
+     dialog appears: **More info → Run anyway**.
+   - **Any OS:** run `python3 serve.py` inside the unzipped folder
+     (never shows a warning).
+
+   The app opens at `http://localhost:8321/` and needs **no internet at
+   all**. Note: double-clicking `index.html` directly will *not* work —
+   browsers refuse to start the WebAssembly Python engine from a `file://`
+   page. That is exactly what the start scripts are for.
+
+3. **From a checkout (developers).** See *Quick start* above.
+
+## Data privacy & responsibility
+
+- **No data is ever uploaded.** Phenopacket files are read locally by your
+  browser and analysed by Python-in-WebAssembly on your machine. A
+  Content-Security-Policy enforced by the browser blocks the page from
+  transmitting anything to any other server. The GitHub Pages server only
+  delivers the application code — it never sees your files.
+- **The live site is nevertheless a public website.** Using it means your
+  browser connects to GitHub's servers to download the application (GitHub
+  sees your IP address, as with any website). If you work with **sensitive
+  or unpublished patient data**, your institution's policies may restrict
+  the use of externally hosted web tools regardless of where the data is
+  processed — in that case use the offline bundle or the installed app in
+  offline mode, and consult your data-protection officer when in doubt.
+- **No warranty, no liability.** This software is provided *“as is”*,
+  without warranty of any kind (see [LICENSE](LICENSE)). The authors and
+  contributors cannot take responsibility for how the tool is used or for
+  any consequences of using it with sensitive data. **You remain responsible
+  for compliance with your local data-protection regulations (e.g. GDPR) and
+  your institution's policies.**
 
 ## License
 

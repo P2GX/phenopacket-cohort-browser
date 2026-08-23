@@ -14,7 +14,8 @@
       '<strong style="font-size:16px">⚠️ Almost there — this file can’t run by double-clicking it.</strong><br>' +
       'Browsers block the built-in Python engine when a page is opened directly from disk.<br>' +
       '<b>To start the offline app:</b> double-click <b>START_MAC.command</b> (macOS; first time: ' +
-      'right-click → Open) or <b>START_WINDOWS.bat</b> (Windows) in this folder.<br>' +
+      'approve it under System Settings → Privacy &amp; Security → “Open Anyway”) or ' +
+      '<b>START_WINDOWS.bat</b> (Windows) in this folder — see README_OFFLINE.txt.<br>' +
       'Or simply use the online version — it also works offline after the first visit.';
     document.body.appendChild(banner);
     var status = document.getElementById('py-status');

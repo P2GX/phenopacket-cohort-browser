@@ -12,8 +12,11 @@ Usage:  python tools/build_offline.py
 
 from __future__ import annotations
 
+import datetime
 import io
+import json
 import shutil
+import subprocess
 import tarfile
 import urllib.request
 import zipfile
@@ -98,9 +101,15 @@ It needs NO internet connection — the Python engine (Pyodide) is included.
 To start it (any Python 3 must be installed, nothing else):
 
   * macOS:    double-click  START_MAC.command
-              (first time: right-click → Open, or run `bash START_MAC.command`)
+              FIRST TIME ONLY: macOS warns it "could not verify" the script
+              (it is not Apple-notarized). Click "Done", then open
+              System Settings -> Privacy & Security, scroll down to
+              "START_MAC.command was blocked", click "Open Anyway", confirm.
+              Every later start is a normal double-click.
+              (On macOS 14 or older, right-click -> Open also works.)
   * Windows:  double-click  START_WINDOWS.bat
-  * Any OS:   python3 serve.py
+              (if SmartScreen appears: "More info" -> "Run anyway")
+  * Any OS:   python3 serve.py   (never shows a warning)
 
 Your browser opens http://localhost:8321/ — drop your phenopacket JSON
 files there. All processing happens locally; nothing is ever uploaded.
@@ -119,6 +128,18 @@ def main() -> None:
     shutil.copytree(APP, STAGE, dirs_exist_ok=True)
     shutil.copy(REPO / "CHANGELOG.md", STAGE / "CHANGELOG.md")
 
+    # 1b. stamp the version automatically from the current git tag/commit,
+    #     so nobody has to remember to edit version.json before a build
+    try:
+        ver = subprocess.check_output(
+            ["git", "describe", "--tags", "--always"], cwd=REPO, text=True
+        ).strip().lstrip("v")
+        (STAGE / "version.json").write_text(json.dumps(
+            {"version": ver, "date": datetime.date.today().isoformat()}, indent=2) + "\n")
+        print(f"Stamped version {ver}")
+    except Exception as exc:  # not a git checkout — keep app/version.json as-is
+        print(f"Version stamping skipped ({exc})")
+
     # 2. vendored Pyodide (pybridge.js auto-detects vendor/pyodide/).
     # The repo already ships it; download only if it's missing.
     pyodide_dir = STAGE / "vendor" / "pyodide"
@@ -134,8 +155,7 @@ def main() -> None:
     (STAGE / "START_WINDOWS.bat").write_text(START_WIN)
     (STAGE / "README_OFFLINE.txt").write_text(README_OFFLINE)
 
-    # 4. zip (preserving the execute bit on the .command start script,
-    #    so macOS users can double-click it after unzipping)
+    # 4. zip
     zip_path = DIST / "cohort-explorer-offline.zip"
     if zip_path.exists():
         zip_path.unlink()
