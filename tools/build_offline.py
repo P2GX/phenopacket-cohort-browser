@@ -134,14 +134,21 @@ def main() -> None:
     (STAGE / "START_WINDOWS.bat").write_text(START_WIN)
     (STAGE / "README_OFFLINE.txt").write_text(README_OFFLINE)
 
-    # 4. zip
+    # 4. zip (preserving the execute bit on the .command start script,
+    #    so macOS users can double-click it after unzipping)
     zip_path = DIST / "cohort-explorer-offline.zip"
     if zip_path.exists():
         zip_path.unlink()
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for f in sorted(STAGE.rglob("*")):
-            if f.is_file():
-                zf.write(f, Path("cohort-explorer-offline") / f.relative_to(STAGE))
+            if not f.is_file():
+                continue
+            arcname = str(Path("cohort-explorer-offline") / f.relative_to(STAGE))
+            info = zipfile.ZipInfo(arcname)
+            info.compress_type = zipfile.ZIP_DEFLATED
+            mode = 0o755 if f.suffix in {".command", ".py"} else 0o644
+            info.external_attr = mode << 16
+            zf.writestr(info, f.read_bytes())
     print(f"Wrote {zip_path}  ({zip_path.stat().st_size / 1e6:.1f} MB)")
 
 
