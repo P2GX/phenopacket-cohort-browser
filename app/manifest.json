@@ -1,0 +1,15 @@
+{
+  "name": "Phenopacket Cohort Browser",
+  "short_name": "Cohort Browser",
+  "description": "Privacy-preserving cohort explorer for GA4GH phenopackets — all statistics run locally in your browser.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f5f2ec",
+  "theme_color": "#057E96",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -15,10 +15,11 @@ let readyPromise = null;
 
 async function detectBase() {
   try {
-    // cache: 'no-cache' revalidates with the server, so a previously-cached
-    // 404 (e.g. from before vendor/pyodide/ was deployed) can never wedge the
-    // probe into the CDN fallback.
-    const res = await fetch(LOCAL_BASE + 'pyodide.js', { method: 'HEAD', cache: 'no-cache' });
+    // GET + cache:'no-cache': revalidates with the server when online (a
+    // previously-cached 404 can never wedge the probe into the CDN fallback),
+    // and still matches the service worker's offline cache (which only
+    // serves GET requests) when there is no connection.
+    const res = await fetch(LOCAL_BASE + 'pyodide.js', { cache: 'no-cache' });
     if (res.ok) return LOCAL_BASE;
   } catch (_) { /* fall through to CDN */ }
   return CDN_BASE;

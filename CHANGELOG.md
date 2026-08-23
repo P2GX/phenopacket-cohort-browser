@@ -6,6 +6,21 @@ This file is shown to users on the **About** tab of the deployed site.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] — 2026-08-20
+
+### Added
+
+- Installable app: open the site once, then "Install" (Chrome/Edge) or "Add to Dock" (Safari) — the browser becomes a normal app icon and works fully offline (the whole app, including the Python runtime and the example cohort, is pre-cached on first visit).
+- Opening `index.html` directly from disk now shows friendly start instructions instead of a dead "engine starting…" screen.
+- Content-Security-Policy: the browser itself blocks any network request to anything except the site's own origin — loaded data cannot be transmitted anywhere.
+- Fonts are self-hosted: the site makes zero third-party requests of any kind.
+- Vendored Pyodide runtime and Chart.js (no CDN dependency).
+
+### Fixed
+
+- Python engine probe can no longer be wedged by a stale cached 404, and works offline.
+- Offline bundle zip preserves execute permissions on its start scripts.
+
 ## [0.1.0] — 2026-08-19
 
 ### Added
