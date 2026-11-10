@@ -1,7 +1,12 @@
-"""Genes tab — HGNC-annotated genomic interpretations.
+"""Genetic Variation tab — HGNC-annotated genomic interpretations.
 
 Includes the Gene × Diagnosis explorer (stacked bars / heatmap), which is
 recomputed on demand when the user changes a dropdown.
+
+All counts on this tab are *unique individuals*.  A "record" (one genomic
+interpretation) is only used internally; it differs from an individual only
+when the same person carries the same gene in several interpretations, which
+is rare enough that exposing it in the UI caused more confusion than insight.
 """
 
 from __future__ import annotations
@@ -47,6 +52,58 @@ def collect_gene_rows(packets: list) -> list:
     return rows
 
 
+def collect_variant_rows(rows: list, n_cohort: int) -> list:
+    """Collapse genomic-interpretation records into unique variants.
+
+    A variant is identified by (gene, HGVS expression, zygosity).  Each row
+    carries how many individuals in the cohort carry that exact combination,
+    plus the diseases / ACMG classes / interpretation statuses seen with it.
+    """
+    var_map: dict = {}
+    for r in rows:
+        key = (r["gene"], r["hgvs"], r["allelic"])
+        v = var_map.setdefault(
+            key,
+            {
+                "gene": r["gene"],
+                "hgnc_id": r["hgnc_id"],
+                "hgvs": r["hgvs"],
+                "allelic": r["allelic"],
+                "patients": set(),
+                "diseases": set(),
+                "acmg_counts": {},
+                "status_counts": {},
+            },
+        )
+        v["patients"].add(r["patient_id"])
+        v["diseases"].add(r["disease"])
+        v["acmg_counts"][r["acmg"]] = v["acmg_counts"].get(r["acmg"], 0) + 1
+        v["status_counts"][r["status"]] = v["status_counts"].get(r["status"], 0) + 1
+
+    def _top(counts: dict) -> str:
+        return sorted_entries(counts)[0][0] if counts else "—"
+
+    return sorted(
+        (
+            {
+                "gene": v["gene"],
+                "hgnc_id": v["hgnc_id"],
+                "hgvs": v["hgvs"],
+                "allelic": v["allelic"],
+                "n_individuals": len(v["patients"]),
+                "pct_individuals": (len(v["patients"]) / n_cohort * 100) if n_cohort else 0.0,
+                "diseases": " · ".join(sorted(v["diseases"])),
+                "acmg": _top(v["acmg_counts"]),
+                # > 1 means the same variant was classified differently somewhere
+                "n_acmg_classes": len(v["acmg_counts"]),
+                "status": _top(v["status_counts"]),
+            }
+            for v in var_map.values()
+        ),
+        key=lambda v: (-v["n_individuals"], v["gene"], v["hgvs"]),
+    )
+
+
 def compute(packets: list) -> dict:
     n = len(packets)
     rows = collect_gene_rows(packets)
@@ -56,10 +113,15 @@ def compute(packets: list) -> dict:
     unique_patients = len({r["patient_id"] for r in rows})
     path_count = sum(1 for r in rows if r["acmg"] in PATHOGENIC_CLASSES)
 
-    gene_counts = counter(r["gene"] for r in rows)
-    top20 = sorted_entries(gene_counts)[:20][::-1]
+    # Top genes by number of unique individuals (not records)
+    gene_patients: dict = {}
+    for r in rows:
+        gene_patients.setdefault(r["gene"], set()).add(r["patient_id"])
+    gene_counts = {g: len(s) for g, s in gene_patients.items()}
+    top20 = sorted_entries(gene_counts)[:20]  # most frequent first → top of the chart
 
     acmg_counts = counter(r["acmg"] for r in rows)
+    variants = collect_variant_rows(rows, n)
 
     # One summary row per gene
     summary_map: dict = {}
@@ -72,13 +134,11 @@ def compute(packets: list) -> dict:
                 "patients": set(),
                 "diseases": set(),
                 "acmg_counts": {},
-                "records": 0,
             },
         )
         g["patients"].add(r["patient_id"])
         g["diseases"].add(r["disease"])
         g["acmg_counts"][r["acmg"]] = g["acmg_counts"].get(r["acmg"], 0) + 1
-        g["records"] += 1
 
     gene_summary = sorted(
         (
@@ -89,7 +149,6 @@ def compute(packets: list) -> dict:
                 "pct_patients": (len(g["patients"]) / n * 100) if n else 0.0,
                 "n_diseases": len(g["diseases"]),
                 "diseases": " · ".join(sorted(g["diseases"])),
-                "records": g["records"],
                 "top_acmg": sorted_entries(g["acmg_counts"])[0][0] if g["acmg_counts"] else "—",
                 "acmg_break": ", ".join(
                     f"{k.replace('_', ' ')}:{v}" for k, v in sorted_entries(g["acmg_counts"])
@@ -105,32 +164,29 @@ def compute(packets: list) -> dict:
         "stats": {
             "unique_genes": unique_genes,
             "unique_patients": unique_patients,
-            "records": len(rows),
+            "unique_variants": len(variants),
             "linked_dx": unique_dx,
             "path_count": path_count,
         },
         "top20": {"labels": [e[0] for e in top20], "counts": [e[1] for e in top20]},
         "acmg_counts": acmg_counts,
         "gene_summary": gene_summary,
-        "rows": rows,
+        "variants": variants,
     }
 
 
 # ── Gene × Diagnosis explorer ──────────────────────────────────────────────
 
-def _count(rows: list, metric: str) -> int:
-    if metric == "patients":
-        return len({r["patient_id"] for r in rows})
-    return len(rows)
+def _count(rows: list) -> int:
+    """Unique individuals among a set of records."""
+    return len({r["patient_id"] for r in rows})
 
 
-def explorer(packets: list, view: str = "gene-per-dx", top_n: int = 15,
-             metric: str = "patients") -> dict:
-    """Data for the Gene × Diagnosis explorer.
+def explorer(packets: list, view: str = "gene-per-dx", top_n: int = 15) -> dict:
+    """Data for the Gene × Diagnosis explorer.  All counts are unique individuals.
 
     view   — "gene-per-dx" | "dx-per-gene" | "heatmap"
     top_n  — 0 means "all"
-    metric — "patients" (unique) | "records"
     """
     rows = collect_gene_rows(packets)
     if not rows:
@@ -145,17 +201,14 @@ def explorer(packets: list, view: str = "gene-per-dx", top_n: int = 15,
         by_gene.setdefault(r["gene"], []).append(r)
         by_dx.setdefault(r["disease"], []).append(r)
 
-    gene_totals = {g: _count(by_gene[g], metric) for g in all_genes}
-    dx_totals = {d: _count(by_dx[d], metric) for d in all_dx}
+    gene_totals = {g: _count(by_gene[g]) for g in all_genes}
+    dx_totals = {d: _count(by_dx[d]) for d in all_dx}
 
     if view == "heatmap":
         top_genes = [g for g, _ in sorted_entries(gene_totals)[: top_n or len(all_genes)]]
         top_dx = [d for d, _ in sorted_entries(dx_totals)[: top_n or len(all_dx)]]
         matrix = [
-            [
-                _count([r for r in by_gene[g] if r["disease"] == d], metric)
-                for d in top_dx
-            ]
+            [_count([r for r in by_gene[g] if r["disease"] == d]) for d in top_dx]
             for g in top_genes
         ]
         max_val = max((v for row in matrix for v in row), default=0) or 1
@@ -166,7 +219,6 @@ def explorer(packets: list, view: str = "gene-per-dx", top_n: int = 15,
             "diagnoses": top_dx,
             "matrix": matrix,
             "max": max_val,
-            "metric": metric,
         }
 
     if view == "gene-per-dx":
@@ -178,10 +230,7 @@ def explorer(packets: list, view: str = "gene-per-dx", top_n: int = 15,
         datasets = [
             {
                 "label": s,
-                "data": [
-                    _count([r for r in by_dx[pk] if r["gene"] == s], metric)
-                    for pk in primary
-                ],
+                "data": [_count([r for r in by_dx[pk] if r["gene"] == s]) for pk in primary],
             }
             for s in secondary
         ]
@@ -194,10 +243,7 @@ def explorer(packets: list, view: str = "gene-per-dx", top_n: int = 15,
         datasets = [
             {
                 "label": s,
-                "data": [
-                    _count([r for r in by_gene[pk] if r["disease"] == s], metric)
-                    for pk in primary
-                ],
+                "data": [_count([r for r in by_gene[pk] if r["disease"] == s]) for pk in primary],
             }
             for s in secondary
         ]
@@ -207,5 +253,4 @@ def explorer(packets: list, view: str = "gene-per-dx", top_n: int = 15,
         "empty": False,
         "primary_keys": primary,
         "datasets": datasets,
-        "metric": metric,
     }
