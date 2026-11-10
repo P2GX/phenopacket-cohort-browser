@@ -35,7 +35,7 @@ def compute(packets: list) -> dict:
         }
         for d in rows
     ]
-    top30 = table[:30][::-1]
+    top30 = table[:30]  # most frequent first → drawn at the top of the horizontal bar chart
 
     return {
         "table": table,

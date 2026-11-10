@@ -108,7 +108,7 @@ async function ingest(packets, texts) {
 
 function updateHeaderStats(h) {
   document.getElementById('cohort-stats').innerHTML = `
-    <div class="stat-pill"><strong>${h.n_patients.toLocaleString()}</strong> patients</div>
+    <div class="stat-pill"><strong>${h.n_patients.toLocaleString()}</strong> individuals</div>
     <div class="stat-pill">median age <strong>${h.median_age !== null ? h.median_age.toFixed(1) + 'y' : '—'}</strong></div>
     <div class="stat-pill"><strong>${h.n_unique_dx}</strong> unique diagnoses</div>`;
 }

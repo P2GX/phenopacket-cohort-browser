@@ -27,7 +27,7 @@ export default {
       </div>
       <div class="card" style="margin-bottom:20px">
         <h3>Value Distributions
-          <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:8px">top assays by frequency · box = IQR · line = median · whiskers = 5–95th percentile</span>
+          <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:8px">top assays by frequency · dark box = IQR · light band = 5–95th percentile · line = median · whiskers = min–max</span>
         </h3>
         <div id="meas-boxplots"></div>
       </div>
@@ -66,16 +66,16 @@ export default {
     const s = m.stats;
     document.getElementById('meas-stats').innerHTML = `
       <div class="stat-card"><div class="val" style="color:var(--accent)">${s.records.toLocaleString()}</div><div class="lbl">Total Records</div></div>
-      <div class="stat-card"><div class="val" style="color:var(--green)">${s.patients_with.toLocaleString()}</div><div class="lbl">Patients with Measurements</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--green)">${s.patients_with.toLocaleString()}</div><div class="lbl">Individuals with Measurements</div></div>
       <div class="stat-card"><div class="val" style="color:var(--purple)">${s.unique_assays.toLocaleString()}</div><div class="lbl">Unique Assay Types</div></div>
-      <div class="stat-card"><div class="val" style="color:var(--orange)">${s.avg_per_patient.toFixed(1)}</div><div class="lbl">Avg Records / Patient</div></div>`;
+      <div class="stat-card"><div class="val" style="color:var(--orange)">${s.avg_per_patient.toFixed(1)}</div><div class="lbl">Avg Records / Individual</div></div>`;
 
     // ── Assay overview table ──
     const assayCols = [
       { key: 'label', label: 'Assay', render: r => `<strong>${esc(r.label)}</strong>` },
       { key: 'id', label: 'LOINC ID', render: r => `<span style="color:var(--muted);font-size:11px">${esc(r.id)}</span>` },
       { key: 'unit', label: 'Unit', render: r => `<span style="font-size:11px">${esc(r.unit) || '—'}</span>` },
-      { key: 'n_patients', label: 'Patients', render: r => barCell(r.n_patients, r.pct_patients, 'var(--accent)') },
+      { key: 'n_patients', label: 'Individuals', render: r => barCell(r.n_patients, r.pct_patients, 'var(--accent)') },
       { key: 'n_records', label: 'Records', render: r => r.n_records.toLocaleString() },
       { key: 'min', label: 'Min', render: r => `<span style="color:var(--muted)">${fmt2(r.min)}</span>` },
       { key: 'median', label: 'Median', render: r => `<strong>${fmt2(r.median)}</strong>` },
@@ -98,7 +98,7 @@ export default {
 
     // ── All records table ──
     const recCols = [
-      { key: 'subject_id', label: 'Patient', render: r => `<span style="color:var(--accent);font-size:11px">${esc(r.subject_id)}</span>` },
+      { key: 'subject_id', label: 'Individual', render: r => `<span style="color:var(--accent);font-size:11px">${esc(r.subject_id)}</span>` },
       { key: 'assay_label', label: 'Assay', render: r => esc(r.assay_label) },
       { key: 'assay_id', label: 'LOINC ID', render: r => `<span style="color:var(--muted);font-size:11px">${esc(r.assay_id)}</span>` },
       { key: 'val', label: 'Value', render: r => `<strong>${fmt2(r.val)}</strong>` },
@@ -145,7 +145,8 @@ function renderBoxplots(topAssays) {
     const range = a.max - a.min || 1;
     const x = v => PAD_L + ((v - a.min) / range) * (PLOT_W - PAD_L - PAD_R);
     const y = PAD_T + i * (BAR_H + 10) + BAR_H / 2;
-    const xMin = x(a.min), xP25 = x(a.p25), xMed = x(a.median), xP75 = x(a.p75), xP95 = x(a.p95), xMax = x(a.max);
+    const xMin = x(a.min), xP05 = x(a.p05), xP25 = x(a.p25), xMed = x(a.median),
+      xP75 = x(a.p75), xP95 = x(a.p95), xMax = x(a.max);
 
     return `
       <text x="${PAD_L - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#334155"
@@ -153,8 +154,8 @@ function renderBoxplots(topAssays) {
       <line x1="${xMin}" y1="${y}" x2="${xMax}" y2="${y}" stroke="#cbd5e1" stroke-width="1.5"/>
       <line x1="${xMin}" y1="${y - 5}" x2="${xMin}" y2="${y + 5}" stroke="#94a3b8" stroke-width="1.5"/>
       <line x1="${xMax}" y1="${y - 5}" x2="${xMax}" y2="${y + 5}" stroke="#94a3b8" stroke-width="1.5"/>
-      <rect x="${x(a.p25 < a.min ? a.min : a.p25)}" y="${y - BAR_H / 2 + 4}"
-            width="${Math.max(0, xP95 - xP25)}" height="${BAR_H - 8}" rx="2" fill="#bfdbfe" opacity="0.5"/>
+      <rect x="${xP05}" y="${y - BAR_H / 2 + 4}"
+            width="${Math.max(0, xP95 - xP05)}" height="${BAR_H - 8}" rx="2" fill="#bfdbfe" opacity="0.5"/>
       <rect x="${xP25}" y="${y - BAR_H / 2 + 2}" width="${Math.max(1, xP75 - xP25)}" height="${BAR_H - 4}"
             rx="3" fill="#60a5fa" opacity="0.8"/>
       <line x1="${xMed}" y1="${y - BAR_H / 2 + 2}" x2="${xMed}" y2="${y + BAR_H / 2 - 2}" stroke="#1d4ed8" stroke-width="2"/>
@@ -201,7 +202,7 @@ async function showAssayDetail(assayId) {
         <h3 style="margin-bottom:2px">${esc(a.label)}
           <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:6px">${esc(a.id)} · ${esc(a.unit)}</span>
         </h3>
-        <div style="font-size:11px;color:var(--muted)">${a.n_records.toLocaleString()} records across ${a.n_patients.toLocaleString()} patients</div>
+        <div style="font-size:11px;color:var(--muted)">${a.n_records.toLocaleString()} records across ${a.n_patients.toLocaleString()} individuals</div>
       </div>
       <button id="assay-detail-close"
         style="background:none;border:none;font-size:18px;color:var(--muted);cursor:pointer;line-height:1">×</button>
@@ -216,7 +217,7 @@ async function showAssayDetail(assayId) {
         <table style="width:100%;font-size:12px;border-collapse:collapse">
           ${[
             ['N records', a.n_records.toLocaleString()],
-            ['N patients', a.n_patients.toLocaleString()],
+            ['N individuals', a.n_patients.toLocaleString()],
             ['Minimum', Number(sm.min).toFixed(3) + ' ' + a.unit],
             ['5th percentile', Number(sm.p05).toFixed(3) + ' ' + a.unit],
             ['25th percentile', Number(sm.p25).toFixed(3) + ' ' + a.unit],
@@ -289,7 +290,7 @@ async function buildOverTime() {
 
   const isAge = data.time_type === 'age';
   infoEl.textContent =
-    `${data.n_records.toLocaleString()} records across ${data.n_patients} patients · time axis: ${isAge ? 'age (years)' : 'calendar date'}`;
+    `${data.n_records.toLocaleString()} records across ${data.n_patients} individuals · time axis: ${isAge ? 'age (years)' : 'calendar date'}`;
 
   const datasets = [];
   data.groups.forEach((grp, gi) => {
