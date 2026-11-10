@@ -34,7 +34,7 @@ export function histogram(key, canvasId, labels, bins, color) {
     data: { labels, datasets: [{ data: bins, backgroundColor: color, borderRadius: 2, borderSkipped: false }] },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.raw.toLocaleString()} patients` } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.raw.toLocaleString()} individuals` } } },
       scales: {
         x: { ticks: { color: '#94a3b8', font: { size: 10, family: NUM_FONT }, maxRotation: 45 }, grid: { color: 'rgba(0,0,0,.06)' } },
         y: { ticks: { color: '#94a3b8', font: { size: 10, family: NUM_FONT } }, grid: { color: 'rgba(0,0,0,.06)' } },
@@ -44,7 +44,7 @@ export function histogram(key, canvasId, labels, bins, color) {
 }
 
 // Horizontal "top N" bar chart
-export function hbar(key, canvasId, labels, data, color, tooltipSuffix = 'patients') {
+export function hbar(key, canvasId, labels, data, color, tooltipSuffix = 'individuals') {
   destroyChart(key);
   charts[key] = new Chart(document.getElementById(canvasId), {
     type: 'bar',
