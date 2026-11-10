@@ -2,11 +2,11 @@
   "id": "example-023",
   "subject": {
     "id": "PAT-0023",
-    "sex": "MALE",
-    "dateOfBirth": "1987-12-01",
+    "sex": "FEMALE",
+    "dateOfBirth": "1993-02-02",
     "timeAtLastEncounter": {
       "age": {
-        "iso8601duration": "P23Y1M"
+        "iso8601duration": "P16Y6M"
       }
     },
     "vitalStatus": {
@@ -16,49 +16,84 @@
   "phenotypicFeatures": [
     {
       "type": {
-        "id": "HP:0002090",
-        "label": "Pneumonia"
+        "id": "HP:0004313",
+        "label": "Decreased circulating antibody concentration"
       },
-      "excluded": true
+      "onset": {
+        "age": {
+          "iso8601duration": "P7Y11M"
+        }
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Moderate"
+      }
     },
     {
       "type": {
         "id": "HP:0002721",
         "label": "Immunodeficiency"
       },
-      "severity": {
-        "id": "HP:0012825",
-        "label": "Severe"
-      }
-    },
-    {
-      "type": {
-        "id": "HP:0001873",
-        "label": "Thrombocytopenia"
-      },
-      "onset": {
-        "age": {
-          "iso8601duration": "P20Y2M"
-        }
-      }
+      "excluded": true
     },
     {
       "type": {
         "id": "HP:0100806",
         "label": "Sepsis"
       },
-      "excluded": true
+      "onset": {
+        "age": {
+          "iso8601duration": "P5Y10M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0002715",
+        "label": "Abnormality of the immune system"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P16Y8M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0002090",
+        "label": "Pneumonia"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P12Y7M"
+        }
+      },
+      "severity": {
+        "id": "HP:0012825",
+        "label": "Moderate"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0000964",
+        "label": "Eczema"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P0Y5M"
+        }
+      }
     }
   ],
   "diseases": [
     {
       "term": {
-        "id": "MONDO:0011073",
-        "label": "hyper-IgM syndrome"
+        "id": "MONDO:0018396",
+        "label": "Wiskott-Aldrich syndrome"
       },
       "onset": {
         "age": {
-          "iso8601duration": "P2Y"
+          "iso8601duration": "P13Y"
         }
       }
     }
@@ -69,29 +104,29 @@
       "progressStatus": "UNSOLVED",
       "diagnosis": {
         "disease": {
-          "id": "MONDO:0011073",
-          "label": "hyper-IgM syndrome"
+          "id": "MONDO:0018396",
+          "label": "Wiskott-Aldrich syndrome"
         },
         "genomicInterpretations": [
           {
             "subjectOrBiosampleId": "PAT-0023",
-            "interpretationStatus": "CONTRIBUTORY",
+            "interpretationStatus": "CAUSATIVE",
             "variantInterpretation": {
-              "acmgPathogenicityClassification": "PATHOGENIC",
+              "acmgPathogenicityClassification": "UNCERTAIN_SIGNIFICANCE",
               "variationDescriptor": {
                 "geneContext": {
-                  "valueId": "HGNC:9840",
-                  "symbol": "RAG1"
+                  "valueId": "HGNC:12765",
+                  "symbol": "BTK"
                 },
                 "expressions": [
                   {
                     "syntax": "hgvs.c",
-                    "value": "NM_000013.3:c.2489T>A"
+                    "value": "NM_000037.3:c.2248A>G"
                   }
                 ],
                 "allelicState": {
-                  "id": "GENO:0000136",
-                  "label": "homozygous"
+                  "id": "GENO:0000134",
+                  "label": "hemizygous"
                 }
               }
             }
@@ -103,6 +138,26 @@
   "measurements": [
     {
       "assay": {
+        "id": "LOINC:2458-8",
+        "label": "IgA [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 222.95
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P11Y10M"
+        }
+      }
+    },
+    {
+      "assay": {
         "id": "LOINC:2472-9",
         "label": "IgG [Mass/volume] in Serum"
       },
@@ -112,12 +167,32 @@
             "id": "UCUM:mg/dL",
             "label": "mg/dL"
           },
-          "value": 1506.72
+          "value": 1573.15
         }
       },
       "timeObserved": {
         "age": {
-          "iso8601duration": "P10Y8M"
+          "iso8601duration": "P14Y7M"
+        }
+      }
+    },
+    {
+      "assay": {
+        "id": "LOINC:2472-9",
+        "label": "IgG [Mass/volume] in Serum"
+      },
+      "value": {
+        "quantity": {
+          "unit": {
+            "id": "UCUM:mg/dL",
+            "label": "mg/dL"
+          },
+          "value": 1336.1
+        }
+      },
+      "timeObserved": {
+        "age": {
+          "iso8601duration": "P5Y1M"
         }
       }
     },
@@ -132,12 +207,12 @@
             "id": "UCUM:mg/dL",
             "label": "mg/dL"
           },
-          "value": 128.88
+          "value": 87.49
         }
       },
       "timeObserved": {
         "age": {
-          "iso8601duration": "P17Y0M"
+          "iso8601duration": "P1Y0M"
         }
       }
     },
@@ -152,12 +227,12 @@
             "id": "UCUM:mg/dL",
             "label": "mg/dL"
           },
-          "value": 63.95
+          "value": 223.73
         }
       },
       "timeObserved": {
         "age": {
-          "iso8601duration": "P20Y5M"
+          "iso8601duration": "P6Y5M"
         }
       }
     },
@@ -172,12 +247,12 @@
             "id": "UCUM:mg/dL",
             "label": "mg/dL"
           },
-          "value": 219.13
+          "value": 138.54
         }
       },
       "timeObserved": {
         "age": {
-          "iso8601duration": "P1Y5M"
+          "iso8601duration": "P9Y8M"
         }
       }
     },
@@ -192,172 +267,12 @@
             "id": "UCUM:mg/dL",
             "label": "mg/dL"
           },
-          "value": 48.63
+          "value": 78.26
         }
       },
       "timeObserved": {
         "age": {
-          "iso8601duration": "P8Y5M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:2458-8",
-        "label": "IgA [Mass/volume] in Serum"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:mg/dL",
-            "label": "mg/dL"
-          },
-          "value": 299.89
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P12Y6M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:2458-8",
-        "label": "IgA [Mass/volume] in Serum"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:mg/dL",
-            "label": "mg/dL"
-          },
-          "value": 389.75
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P10Y7M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:2458-8",
-        "label": "IgA [Mass/volume] in Serum"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:mg/dL",
-            "label": "mg/dL"
-          },
-          "value": 204.03
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P22Y8M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:2458-8",
-        "label": "IgA [Mass/volume] in Serum"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:mg/dL",
-            "label": "mg/dL"
-          },
-          "value": 322.45
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P8Y11M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:26474-7",
-        "label": "Lymphocytes [#/volume] in Blood"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:10*3/uL",
-            "label": "10*3/uL"
-          },
-          "value": 2.17
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P2Y2M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:26474-7",
-        "label": "Lymphocytes [#/volume] in Blood"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:10*3/uL",
-            "label": "10*3/uL"
-          },
-          "value": 1.6
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P17Y1M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:26474-7",
-        "label": "Lymphocytes [#/volume] in Blood"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:10*3/uL",
-            "label": "10*3/uL"
-          },
-          "value": 1.74
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P2Y4M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:26474-7",
-        "label": "Lymphocytes [#/volume] in Blood"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:10*3/uL",
-            "label": "10*3/uL"
-          },
-          "value": 2.23
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P9Y11M"
+          "iso8601duration": "P15Y10M"
         }
       }
     },
@@ -372,12 +287,12 @@
             "id": "UCUM:cells/uL",
             "label": "cells/uL"
           },
-          "value": 1065.67
+          "value": 599.76
         }
       },
       "timeObserved": {
         "age": {
-          "iso8601duration": "P5Y5M"
+          "iso8601duration": "P9Y0M"
         }
       }
     },
@@ -392,52 +307,12 @@
             "id": "UCUM:cells/uL",
             "label": "cells/uL"
           },
-          "value": 159.3
+          "value": 482.5
         }
       },
       "timeObserved": {
         "age": {
-          "iso8601duration": "P14Y5M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:8122-4",
-        "label": "CD4 cells [#/volume] in Blood"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:cells/uL",
-            "label": "cells/uL"
-          },
-          "value": 1497.41
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P19Y4M"
-        }
-      }
-    },
-    {
-      "assay": {
-        "id": "LOINC:8122-4",
-        "label": "CD4 cells [#/volume] in Blood"
-      },
-      "value": {
-        "quantity": {
-          "unit": {
-            "id": "UCUM:cells/uL",
-            "label": "cells/uL"
-          },
-          "value": 1472.04
-        }
-      },
-      "timeObserved": {
-        "age": {
-          "iso8601duration": "P20Y0M"
+          "iso8601duration": "P10Y5M"
         }
       }
     }
