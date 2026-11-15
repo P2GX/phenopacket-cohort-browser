@@ -103,7 +103,7 @@ in `utils.py` — every tab picks it up. Add a test in `tests/`, push, done.
    example) and register it in `app/js/tabs/index.js`.
 
 3. Add a line to `CHANGELOG.md` and push — the deployed site updates
-   automatically (the shown version is stamped from the latest git tag).
+   automatically on every push to `main`.
 
 Interactive controls (dropdowns that recompute) call Python through
 `callApi('my_function', {...})` — register the function in `API` in
@@ -112,8 +112,10 @@ Interactive controls (dropdowns that recompute) call Python through
 ## Releases & version history
 
 - Update `CHANGELOG.md` with every meaningful change — users see it on the
-  **About** tab. The version number itself is stamped automatically from the
-  latest git tag at build time.
+  **About** tab.
+- Bump the version in `pyproject.toml`, `app/version.json` and
+  `app/py/cohort_stats/__init__.py` (the About tab and the landing page show
+  `app/version.json`).
 - For a tagged release: `git tag v0.1.2 && git push origin v0.1.2`, then
   publish a GitHub release for that tag — CI attaches the offline bundle
   automatically.

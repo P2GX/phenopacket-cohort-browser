@@ -1,6 +1,6 @@
 [project]
 name = "phenopacket-cohort-browser"
-version = "0.1.1"
+version = "0.1.2"
 description = "Descriptive statistics for phenopacket cohorts (runs in CPython and in the browser via Pyodide)"
 requires-python = ">=3.10"
 

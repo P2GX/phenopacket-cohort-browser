@@ -6,7 +6,7 @@ This file is shown to users on the **About** tab of the deployed site.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
 and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.1.2] — 2026-11-15
 
 First round of reviewer feedback.
 
@@ -14,7 +14,7 @@ First round of reviewer feedback.
 
 - **Phenotypic Features: Diagnosis × Phenotype explorer** with three views: diagnoses within each of the top-N features (stacked bars), the top-N features within one chosen diagnosis (share of that diagnosis' individuals), and a feature × diagnosis heatmap (colour = share within diagnosis, number = individuals).
 - **Phenotypic Features over time:** the cumulative (ECDF) curve now uses the whole cohort (or the whole sex / diagnosis group) as 100 % by default, so it plateaus at the share of individuals that have the feature; a checkbox switches back to the classic ECDF of individuals with the feature.
-- **Individual Browser:** list rows show *Living (current age)* or *Deceased (age at death)* instead of the ambiguous age at last encounter; the detail panel gains the matching age row.
+- **Individual Browser:** list rows show *Living (current age)* or *Deceased (age at death)* instead of the ambiguous age at last encounter; the detail panel gains the matching age row. Feature severity is shown as a labelled badge, clearly separated from the onset age.
 
 ### Changed
 
@@ -33,6 +33,7 @@ First round of reviewer feedback.
 
 ### Removed
 
+- CI and deploy workflows now watch `main` (they were still pointed at the old `master` branch, so merges never deployed).
 - `prototype_html_file/` (the original single-file viewer the modular app was ported from) and the stale "update this URL" note in `config.js`.
 
 ## [0.1.1] — 2026-08-20

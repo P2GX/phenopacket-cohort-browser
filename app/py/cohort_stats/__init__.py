@@ -26,7 +26,7 @@ import json
 from . import demographics, diagnoses, diseases, genes, measurements, phenotypes
 from .utils import encounter_age_years, median_of, sanitize
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 
 # ── Cohort state (loaded once per session) ─────────────────────────────────
 
