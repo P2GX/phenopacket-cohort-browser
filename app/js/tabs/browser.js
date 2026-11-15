@@ -172,7 +172,9 @@ function renderDetail(p) {
   const featureRow = (pf, excluded) => {
     const label = pf.type?.label || pf.type?.id || '—';
     const id = pf.type?.id ? `<span style="font-size:10px;color:var(--muted)"> · ${esc(pf.type.id)}</span>` : '';
-    const sev = pf.severity?.label ? `<span style="font-size:10px;color:var(--muted);margin-right:8px">${esc(pf.severity.label)}</span>` : '';
+    const sev = pf.severity?.label
+      ? `<span class="badge badge-muted" title="Severity">severity: ${esc(pf.severity.label)}</span><span style="margin:0 8px">·</span>`
+      : '';
     const onset = pf.onset?.age?.iso8601duration ? `onset ${fmtAge(pf.onset.age.iso8601duration)}` : '—';
     return `<div class="detail-row">
       <span class="key" style="${excluded ? 'text-decoration:line-through;opacity:.7' : 'color:var(--text)'}">${esc(label)}${id}</span>
