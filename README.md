@@ -20,7 +20,7 @@
 
 A **privacy-preserving** cohort browser for [GA4GH phenopackets](https://phenopacket-schema.readthedocs.io/).
 Drop phenopacket JSON files into the page and browse demographics, diagnoses,
-genes, phenotypic features, diseases, measurements and individual patients —
+genes, phenotypic features, diseases, measurements and individuals —
 **all statistics run inside the browser; no data is ever uploaded.**
 
 The descriptive statistics are plain **Python** (`app/py/cohort_stats/`),

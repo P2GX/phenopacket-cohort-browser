@@ -384,21 +384,6 @@
   .detail-row .key { color: var(--muted); }
   .detail-row .val { text-align: right; }
 
-  .hpo-chip {
-    display: inline-block;
-    background: #dbeafe;
-    color: #1d4ed8;
-    border-radius: 4px;
-    padding: 2px 7px;
-    font-size: 10px;
-    margin: 2px;
-  }
-  .hpo-chip.absent {
-    background: #fee2e2;
-    color: #b91c1c;
-    text-decoration: line-through;
-  }
-
   .no-data { color: var(--muted); font-style: italic; font-size: 11px; }
   .empty-state { text-align:center; color: var(--muted); padding: 40px; font-size: 12px; }
 

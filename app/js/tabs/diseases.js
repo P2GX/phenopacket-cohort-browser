@@ -29,7 +29,7 @@ export default {
     const cols = [
       { key: 'label', label: 'Disease', render: r => `<span>${esc(r.label)}</span>` },
       { key: 'id', label: 'MONDO ID', render: r => `<span style="color:var(--muted);font-size:11px">${esc(r.id)}</span>` },
-      { key: 'count', label: 'Patients', render: r => barCell(r.count, r.pct, 'var(--accent)') },
+      { key: 'count', label: 'Individuals', render: r => barCell(r.count, r.pct, 'var(--accent)') },
       { key: 'median_onset', label: 'Median Onset', render: r => fmtYears(r.median_onset) },
       { key: 'min_onset', label: 'Earliest Onset', render: r => fmtYears(r.min_onset) },
     ];

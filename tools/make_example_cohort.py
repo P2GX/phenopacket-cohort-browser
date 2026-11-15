@@ -56,10 +56,50 @@ ACMG = ["PATHOGENIC", "PATHOGENIC", "LIKELY_PATHOGENIC", "UNCERTAIN_SIGNIFICANCE
 STATUS = ["CAUSATIVE", "CAUSATIVE", "CONTRIBUTORY", "CANDIDATE"]
 SEVERITIES = ["Mild", "Moderate", "Severe"]
 
+# GENO ids that actually match their zygosity labels
+ZYGOSITY = [
+    ("GENO:0000136", "homozygous"),
+    ("GENO:0000135", "heterozygous"),
+    ("GENO:0000134", "hemizygous"),
+]
 
-def make_packet(rng: random.Random, i: int) -> dict:
+
+def progress_status(rng: random.Random, acmg: str, status: str) -> str:
+    """Interpretation progress that is consistent with its variant.
+
+    A pathogenic / likely-pathogenic *causative* variant means the case is
+    SOLVED; a VUS or a mere candidate can only be IN_PROGRESS or UNSOLVED.
+    """
+    if acmg in ("PATHOGENIC", "LIKELY_PATHOGENIC") and status == "CAUSATIVE":
+        return "SOLVED"
+    if acmg in ("PATHOGENIC", "LIKELY_PATHOGENIC") and status == "CONTRIBUTORY":
+        return rng.choice(["SOLVED", "IN_PROGRESS"])
+    return rng.choice(["IN_PROGRESS", "UNSOLVED"])
+
+
+def make_hgvs(rng: random.Random) -> str:
+    ref = rng.choice("ACGT")
+    alt = rng.choice([b for b in "ACGT" if b != ref])  # never ref>ref
+    return (f"NM_0000{rng.randint(10, 99)}.{rng.randint(1, 9)}:"
+            f"c.{rng.randint(1, 3000)}{ref}>{alt}")
+
+
+def make_variant_pool(rng: random.Random, n_per_gene: int = 3) -> dict:
+    """A few recurrent variants per gene, so the cohort contains individuals
+    sharing the same variant (the Gene × Variant table then shows
+    frequencies > 1 instead of a flat list of singletons)."""
+    return {sym: [make_hgvs(rng) for _ in range(n_per_gene)] for _, sym in GENES}
+
+
+def make_packet(rng: random.Random, i: int, variant_pool: dict) -> dict:
     disease = rng.choice(DISEASES)
     gene = rng.choice(GENES)
+    # ~70 % of individuals carry one of the gene's recurrent variants
+    hgvs = rng.choice(variant_pool[gene[1]]) if rng.random() < 0.7 else make_hgvs(rng)
+    zygosity_id, zygosity_label = rng.choice(ZYGOSITY)
+    acmg = rng.choice(ACMG)
+    status = rng.choice(STATUS)
+    deceased = rng.random() < 0.08
     sex = rng.choice(["MALE", "FEMALE", "MALE", "FEMALE", "UNKNOWN"])
     birth_year = rng.randint(1955, 2020)
     dob = f"{birth_year:04d}-{rng.randint(1, 12):02d}-{rng.randint(1, 28):02d}"
@@ -95,6 +135,13 @@ def make_packet(rng: random.Random, i: int) -> dict:
             })
 
     onset_years = rng.randint(0, max(1, age_enc_y - 1))
+    vital_status = {"status": "ALIVE"}
+    if deceased:
+        # the last encounter is the time of death
+        vital_status = {
+            "status": "DECEASED",
+            "timeOfDeath": {"age": {"iso8601duration": f"P{age_enc_y}Y{age_enc_m}M"}},
+        }
     packet = {
         "id": f"example-{i:03d}",
         "subject": {
@@ -102,7 +149,7 @@ def make_packet(rng: random.Random, i: int) -> dict:
             "sex": sex,
             "dateOfBirth": dob,
             "timeAtLastEncounter": {"age": {"iso8601duration": f"P{age_enc_y}Y{age_enc_m}M"}},
-            "vitalStatus": {"status": "DECEASED" if rng.random() < 0.08 else "ALIVE"},
+            "vitalStatus": vital_status,
         },
         "phenotypicFeatures": features,
         "diseases": [{
@@ -111,25 +158,18 @@ def make_packet(rng: random.Random, i: int) -> dict:
         }],
         "interpretations": [{
             "id": f"interp-{i:03d}",
-            "progressStatus": rng.choice(["SOLVED", "SOLVED", "IN_PROGRESS", "UNSOLVED"]),
+            "progressStatus": progress_status(rng, acmg, status),
             "diagnosis": {
                 "disease": {"id": disease[0], "label": disease[1]},
                 "genomicInterpretations": [{
                     "subjectOrBiosampleId": f"PAT-{i:04d}",
-                    "interpretationStatus": rng.choice(STATUS),
+                    "interpretationStatus": status,
                     "variantInterpretation": {
-                        "acmgPathogenicityClassification": rng.choice(ACMG),
+                        "acmgPathogenicityClassification": acmg,
                         "variationDescriptor": {
                             "geneContext": {"valueId": gene[0], "symbol": gene[1]},
-                            "expressions": [{
-                                "syntax": "hgvs.c",
-                                "value": f"NM_0000{rng.randint(10, 99)}.{rng.randint(1, 9)}:"
-                                         f"c.{rng.randint(1, 3000)}{rng.choice('ACGT')}>{rng.choice('ACGT')}",
-                            }],
-                            "allelicState": {
-                                "id": "GENO:0000136" if rng.random() < 0.5 else "GENO:0000135",
-                                "label": rng.choice(["homozygous", "heterozygous", "hemizygous"]),
-                            },
+                            "expressions": [{"syntax": "hgvs.c", "value": hgvs}],
+                            "allelicState": {"id": zygosity_id, "label": zygosity_label},
                         },
                     },
                 }],
@@ -147,12 +187,13 @@ def make_packet(rng: random.Random, i: int) -> dict:
 
 def main() -> None:
     rng = random.Random(42)  # deterministic
+    variant_pool = make_variant_pool(rng)
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("example-*.json"):
         old.unlink()
     names = []
     for i in range(1, 41):
-        packet = make_packet(rng, i)
+        packet = make_packet(rng, i, variant_pool)
         name = f"example-{i:03d}.json"
         (OUT / name).write_text(json.dumps(packet, indent=2))
         names.append(name)

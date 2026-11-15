@@ -78,7 +78,7 @@ export async function computeAll() {
 }
 
 // Call an interactive API function (dropdown changes etc.):
-//   callApi('gene_dx_explorer', {view: 'heatmap', top_n: 15, metric: 'patients'})
+//   callApi('gene_dx_explorer', {view: 'heatmap', top_n: 15})
 export async function callApi(fn, args = {}) {
   await whenReady();
   pyodide.globals.set('_api_fn', fn);

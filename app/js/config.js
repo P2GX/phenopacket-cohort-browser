@@ -1,7 +1,6 @@
-// Site configuration — edit after forking / first push.
+// Site configuration — edit after forking.
 
 // Shown on the About tab and the landing page.
-// ⚠️ Update this to your real repository URL after the first push:
 export const REPO_URL = 'https://github.com/P2GX/phenopacket-cohort-browser';
 
 // Title shown in the header and on the landing page.

@@ -58,10 +58,46 @@ class TestGenes:
     def test_minimal(self, minimal_packet):
         g = genes.compute([minimal_packet])
         assert g["stats"]["unique_genes"] == 1
+        assert g["stats"]["unique_variants"] == 1
         assert g["stats"]["path_count"] == 1
-        assert g["rows"][0]["gene"] == "GENE1"
-        assert g["rows"][0]["hgvs"] == "NM_1:c.1A>G"
+        v = g["variants"][0]
+        assert v["gene"] == "GENE1"
+        assert v["hgvs"] == "NM_1:c.1A>G"
+        assert v["allelic"] == "heterozygous"
+        assert v["n_individuals"] == 1
         assert g["gene_summary"][0]["top_acmg"] == "PATHOGENIC"
+        assert "records" not in g["gene_summary"][0]
+
+    def test_variants_are_deduplicated(self, minimal_packet):
+        """Two individuals with the same variant + zygosity collapse to one row
+        whose frequency is 2; a different zygosity is a separate row."""
+        import copy
+
+        p2 = copy.deepcopy(minimal_packet)
+        p2["subject"]["id"] = "P2"
+        p3 = copy.deepcopy(minimal_packet)
+        p3["subject"]["id"] = "P3"
+        vd = p3["interpretations"][0]["diagnosis"]["genomicInterpretations"][0][
+            "variantInterpretation"]["variationDescriptor"]
+        vd["allelicState"] = {"label": "homozygous"}
+
+        g = genes.compute([minimal_packet, p2, p3])
+        assert g["stats"]["unique_variants"] == 2
+        by_zyg = {v["allelic"]: v for v in g["variants"]}
+        assert by_zyg["heterozygous"]["n_individuals"] == 2
+        assert by_zyg["homozygous"]["n_individuals"] == 1
+        # sorted by frequency desc
+        assert g["variants"][0]["allelic"] == "heterozygous"
+
+    def test_top20_counts_individuals_not_records(self, minimal_packet):
+        """The same gene listed twice for one person counts once."""
+        import copy
+
+        p = copy.deepcopy(minimal_packet)
+        gi = p["interpretations"][0]["diagnosis"]["genomicInterpretations"]
+        gi.append(copy.deepcopy(gi[0]))
+        g = genes.compute([p])
+        assert g["top20"] == {"labels": ["GENE1"], "counts": [1]}
 
     def test_gene_without_symbol_skipped(self):
         packet = {
@@ -71,17 +107,17 @@ class TestGenes:
                 ]}
             }]
         }
-        assert genes.compute([packet])["rows"] == []
+        assert genes.compute([packet])["variants"] == []
 
     def test_explorer_views(self, example_packets):
         for view in ("gene-per-dx", "dx-per-gene"):
-            e = genes.explorer(example_packets, view=view, top_n=5, metric="patients")
+            e = genes.explorer(example_packets, view=view, top_n=5)
             assert not e["empty"]
             assert len(e["primary_keys"]) <= 5
             for ds in e["datasets"]:
                 assert len(ds["data"]) == len(e["primary_keys"])
 
-        h = genes.explorer(example_packets, view="heatmap", top_n=4, metric="records")
+        h = genes.explorer(example_packets, view="heatmap", top_n=4)
         assert len(h["matrix"]) == len(h["genes"]) <= 4
         assert all(len(row) == len(h["diagnoses"]) for row in h["matrix"])
 
@@ -98,24 +134,99 @@ class TestPhenotypes:
     def test_minimal_excluded_skipped(self, minimal_packet):
         ph = phenotypes.compute([minimal_packet])
         assert [r["id"] for r in ph["table"]] == ["HP:0000001"]
-        assert ph["table"][0]["top_severity"] == "Severe"
         assert ph["table"][0]["median_onset"] == 5.0
+        assert "top_severity" not in ph["table"][0]
 
     def test_over_time_grouping(self, example_packets):
         ph = phenotypes.compute(example_packets)
         term = next(r for r in ph["table"] if r["has_onset"])
         for group_by in ("cohort", "sex", "diagnosis"):
-            ot = phenotypes.over_time(example_packets, term["id"], group_by)
+            ot = phenotypes.over_time(example_packets, term["id"], group_by, ecdf_base="term")
             assert not ot["empty"]
             total = sum(g["n"] for g in ot["groups"])
             assert total == ot["n_records"]
             for g in ot["groups"]:
                 assert sum(g["bins"]) == g["n"]
                 assert len(g["bins"]) == len(ot["hist_labels"])
+                # classic ECDF: always reaches 100 %
                 assert g["ecdf"][-1]["y"] == 100.0
+
+    def test_over_time_ecdf_cohort_denominator(self, example_packets):
+        """With ecdf_base='cohort' (the default) 100 % is the whole group, so
+        the curve plateaus at n / group_size and is extended flat to the
+        right-most onset age across all groups."""
+        ph = phenotypes.compute(example_packets)
+        term = next(r for r in ph["table"] if r["has_onset"])
+        ot = phenotypes.over_time(example_packets, term["id"], "cohort")
+        assert ot["ecdf_base"] == "cohort"
+        (g,) = ot["groups"]
+        assert g["group_size"] == len(example_packets)
+        assert g["ecdf"][-1]["y"] == g["n"] / len(example_packets) * 100
+        assert g["ecdf"][-1]["y"] < 100.0
+
+        by_sex = phenotypes.over_time(example_packets, term["id"], "sex")
+        x_max = max(a for grp in by_sex["groups"] for a in grp["ages"])
+        sex_sizes = {}
+        for p in example_packets:
+            s = p["subject"]["sex"]
+            sex_sizes[s] = sex_sizes.get(s, 0) + 1
+        for grp in by_sex["groups"]:
+            assert grp["group_size"] == sex_sizes[grp["name"]]
+            assert grp["ecdf"][-1]["x"] == x_max  # extended flat to the edge
+            assert grp["ecdf"][-1]["y"] == grp["n"] / grp["group_size"] * 100
 
     def test_over_time_unknown_term(self, example_packets):
         assert phenotypes.over_time(example_packets, "HP:9999999")["empty"] is True
+
+    def test_explorer_dx_per_term(self, example_packets):
+        e = phenotypes.explorer(example_packets, view="dx-per-term", top_n=5)
+        assert not e["empty"]
+        assert len(e["primary_keys"]) <= 5
+        for ds in e["datasets"]:
+            assert len(ds["data"]) == len(e["primary_keys"])
+        # stacks add up to the per-term individual count only when every
+        # individual has exactly one diagnosis (true for the example cohort)
+        for i, total in enumerate(e["primary_totals"]):
+            assert sum(ds["data"][i] for ds in e["datasets"]) == total
+
+    def test_explorer_term_per_dx(self, example_packets):
+        e = phenotypes.explorer(example_packets, view="term-per-dx", top_n=3)
+        assert not e["empty"]
+        # defaults to the most frequent diagnosis
+        assert e["diagnosis"] == e["dx_options"][0]["label"]
+        assert len(e["terms"]) <= 3
+        for t in e["terms"]:
+            assert 0 < t["n"] <= e["n_dx"]
+            assert t["pct"] == t["n"] / e["n_dx"] * 100
+        # explicit diagnosis is respected
+        other = e["dx_options"][-1]["label"]
+        e2 = phenotypes.explorer(example_packets, view="term-per-dx", top_n=0, diagnosis=other)
+        assert e2["diagnosis"] == other
+
+    def test_explorer_heatmap(self, example_packets):
+        h = phenotypes.explorer(example_packets, view="heatmap", top_n=4)
+        assert len(h["matrix"]) == len(h["terms"]) <= 4
+        assert len(h["diagnoses"]) <= 4
+        assert all(len(row) == len(h["diagnoses"]) for row in h["matrix"])
+        assert all(0.0 <= v <= 100.0 for row in h["pct"] for v in row)
+
+    def test_explorer_counts_individuals_once(self, minimal_packet):
+        """A term listed twice for one individual counts once; an individual
+        without any interpretation lands under 'No diagnosis'."""
+        import copy
+
+        p = copy.deepcopy(minimal_packet)
+        p["phenotypicFeatures"].append(copy.deepcopy(p["phenotypicFeatures"][0]))
+        q = {"subject": {"id": "P9"},
+             "phenotypicFeatures": [{"type": {"id": "HP:0000001", "label": "Feature A"}}]}
+        e = phenotypes.explorer([p, q], view="dx-per-term", top_n=0)
+        assert e["primary_keys"] == ["Feature A"]
+        assert e["primary_totals"] == [2]
+        by_dx = {ds["label"]: ds["data"][0] for ds in e["datasets"]}
+        assert by_dx == {"Disease X": 1, phenotypes.NO_DX: 1}
+
+    def test_explorer_empty(self):
+        assert phenotypes.explorer([{}], view="heatmap")["empty"] is True
 
 
 class TestDiseases:
@@ -187,7 +298,7 @@ class TestTopLevel:
 
         out = json.loads(cohort_stats.api(
             "gene_dx_explorer",
-            json.dumps({"view": "heatmap", "top_n": 3, "metric": "records"}),
+            json.dumps({"view": "heatmap", "top_n": 3}),
         ))
         assert len(out["genes"]) <= 3
 

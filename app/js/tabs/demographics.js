@@ -56,10 +56,10 @@ export default {
     const enc = d.encounter_summary, cur = d.current_summary;
 
     document.getElementById('demo-stats').innerHTML = `
-      <div class="stat-card"><div class="val" style="color:var(--accent)">${d.n_patients.toLocaleString()}</div><div class="lbl">Total Patients</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--accent)">${d.n_patients.toLocaleString()}</div><div class="lbl">Total Individuals</div></div>
       <div class="stat-card"><div class="val" style="color:var(--green)">${d.alive.toLocaleString()}</div><div class="lbl">Alive</div></div>
       <div class="stat-card"><div class="val" style="color:var(--red)">${d.deceased.toLocaleString()}</div><div class="lbl">Deceased</div></div>
-      <div class="stat-card"><div class="val" style="color:var(--orange)">${enc.median !== null ? fmtYears(enc.median) : '—'}</div><div class="lbl">Median Age at Encounter</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--orange)">${enc.median !== null ? fmtYears(enc.median) : '—'}</div><div class="lbl">Median Age at Last Encounter</div></div>
       <div class="stat-card"><div class="val" style="color:var(--purple)">${cur.median !== null ? fmtYears(cur.median) : '—'}</div><div class="lbl">Median Current Age</div></div>
       <div class="stat-card"><div class="val" style="color:var(--teal)">${d.earliest_birth_year ?? '—'}</div><div class="lbl">Earliest Birth Year</div></div>`;
 
@@ -89,7 +89,7 @@ export default {
     ];
     document.getElementById('age-summary-table').innerHTML = `
       <table style="width:100%;font-size:12px;border-collapse:collapse">
-        <thead><tr>${th('', 'left')}${th('Age at Encounter')}${th('Current Age')}</tr></thead>
+        <thead><tr>${th('', 'left')}${th('Age at Last Encounter')}${th('Current Age')}</tr></thead>
         <tbody>
           ${rows.map(([lbl, e, c]) => `
             <tr>

@@ -1,5 +1,6 @@
-// Genes tab — renders app/py/cohort_stats/genes.py output, including the
-// interactive Gene × Diagnosis explorer (recomputed in Python on demand).
+// Genetic Variation tab — renders app/py/cohort_stats/genes.py output,
+// including the interactive Gene × Diagnosis explorer (recomputed in Python
+// on demand). All counts shown are unique individuals.
 
 import { charts, destroyChart, hbar, donut, barCell, GD_PALETTE, NUM_FONT } from '../core/charts.js';
 import { esc } from '../core/format.js';
@@ -21,17 +22,17 @@ const badge = (value, map) =>
 
 export default {
   id: 'genes',
-  label: 'Genes',
+  label: 'Genetic Variation',
   computeKey: 'genes',
 
   render(section, g) {
     section.innerHTML = `
-      <div class="section-title">Genes</div>
-      <div class="section-subtitle">HGNC-annotated genomic interpretations across the cohort</div>
+      <div class="section-title">Genetic Variation</div>
+      <div class="section-subtitle">HGNC-annotated genomic interpretations across the cohort · all counts are unique individuals</div>
       <div class="stat-cards" id="gene-stats"></div>
       <div class="grid-2" style="margin-bottom:20px">
         <div class="card">
-          <h3>Top 20 Genes by Patient Count</h3>
+          <h3>Top 20 Genes by Individual Count</h3>
           <div class="chart-wrap" style="height:300px"><canvas id="chart-genes"></canvas></div>
         </div>
         <div class="card">
@@ -66,10 +67,6 @@ export default {
               <option value="50">Top 50</option>
               <option value="0">All</option>
             </select>
-            <select id="gd-metric" class="rows-select">
-              <option value="patients">by patients</option>
-              <option value="records">by records</option>
-            </select>
           </div>
         </div>
         <div id="gd-chart-wrap" style="position:relative;overflow-x:auto">
@@ -80,7 +77,9 @@ export default {
         <div id="gd-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:11px"></div>
       </div>
       <div class="card">
-        <h3>Gene × Variant Table</h3>
+        <h3>Gene × Variant Table
+          <span style="font-size:10px;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:8px">one row per unique gene + HGVS + zygosity combination</span>
+        </h3>
         <div id="tbl-genes"></div>
       </div>`;
 
@@ -88,12 +87,12 @@ export default {
     const s = g.stats;
     document.getElementById('gene-stats').innerHTML = `
       <div class="stat-card"><div class="val" style="color:var(--accent)">${s.unique_genes.toLocaleString()}</div><div class="lbl">Unique Genes</div></div>
-      <div class="stat-card"><div class="val" style="color:var(--green)">${s.unique_patients.toLocaleString()}</div><div class="lbl">Patients with Variants</div></div>
-      <div class="stat-card"><div class="val" style="color:var(--purple)">${s.records.toLocaleString()}</div><div class="lbl">Total Records</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--green)">${s.unique_patients.toLocaleString()}</div><div class="lbl">Individuals with Variants</div></div>
+      <div class="stat-card"><div class="val" style="color:var(--purple)">${s.unique_variants.toLocaleString()}</div><div class="lbl">Unique Variants</div></div>
       <div class="stat-card"><div class="val" style="color:var(--orange)">${s.linked_dx.toLocaleString()}</div><div class="lbl">Linked Diagnoses</div></div>
       <div class="stat-card"><div class="val" style="color:var(--red)">${s.path_count.toLocaleString()}</div><div class="lbl">Path / Likely Path</div></div>`;
 
-    hbar('genes', 'chart-genes', g.top20.labels, g.top20.counts, '#a78bfa', 'records');
+    hbar('genes', 'chart-genes', g.top20.labels, g.top20.counts, '#a78bfa');
 
     // ACMG donut with compact legend labels
     donut('acmg', 'chart-acmg', 'acmg-legend', g.acmg_counts, ACMG_COLORS, null);
@@ -104,8 +103,7 @@ export default {
     const sumCols = [
       { key: 'gene', label: 'Gene', render: r => `<strong style="color:var(--accent)">${esc(r.gene)}</strong>` },
       { key: 'hgnc_id', label: 'HGNC', render: r => `<span style="color:var(--muted);font-size:11px">${esc(r.hgnc_id)}</span>` },
-      { key: 'n_patients', label: 'Patients', render: r => barCell(r.n_patients, r.pct_patients, 'var(--purple)') },
-      { key: 'records', label: 'Records', render: r => r.records },
+      { key: 'n_patients', label: 'Individuals', render: r => barCell(r.n_patients, r.pct_patients, 'var(--purple)') },
       { key: 'n_diseases', label: '# Diagnoses', render: r => r.n_diseases },
       { key: 'diseases', label: 'Diagnoses', render: r => `<span style="font-size:11px">${esc(r.diseases)}</span>` },
       { key: 'top_acmg', label: 'Top ACMG', render: r => badge(r.top_acmg, ACMG_BADGE) },
@@ -114,22 +112,24 @@ export default {
     renderTable('tbl-gene-summary', g.gene_summary, sumCols,
       { defaultSort: 'n_patients', defaultDir: 'desc', searchKeys: ['gene', 'hgnc_id', 'diseases', 'top_acmg'] });
 
-    // ── Gene × Variant table ──
+    // ── Gene × Variant table (unique variant + zygosity, with frequency) ──
     const varCols = [
       { key: 'gene', label: 'Gene', render: r => `<strong style="color:var(--accent)">${esc(r.gene)}</strong>` },
       { key: 'hgnc_id', label: 'HGNC', render: r => `<span style="color:var(--muted);font-size:11px">${esc(r.hgnc_id)}</span>` },
-      { key: 'disease', label: 'Disease', render: r => `<span>${esc(r.disease)}</span>` },
-      { key: 'acmg', label: 'ACMG', render: r => badge(r.acmg, ACMG_BADGE) },
-      { key: 'status', label: 'Status', render: r => badge(r.status, STATUS_BADGE) },
-      { key: 'hgvs', label: 'HGVS (c.)', render: r => `<span style="font-size:11px;color:var(--muted)">${esc(r.hgvs)}</span>` },
+      { key: 'hgvs', label: 'HGVS (c.)', render: r => `<span style="font-size:11px">${esc(r.hgvs)}</span>` },
       { key: 'allelic', label: 'Zygosity', render: r => `<span style="font-size:11px">${esc(r.allelic)}</span>` },
+      { key: 'n_individuals', label: 'Individuals', render: r => barCell(r.n_individuals, r.pct_individuals, 'var(--accent)') },
+      { key: 'diseases', label: 'Diagnoses', render: r => `<span style="font-size:11px">${esc(r.diseases)}</span>` },
+      { key: 'acmg', label: 'ACMG', render: r => badge(r.acmg, ACMG_BADGE) +
+          (r.n_acmg_classes > 1 ? ` <span style="font-size:9px;color:var(--muted)" title="This variant carries ${r.n_acmg_classes} different ACMG classes across individuals; the most common is shown">+${r.n_acmg_classes - 1}</span>` : '') },
+      { key: 'status', label: 'Status', render: r => badge(r.status, STATUS_BADGE) },
     ];
-    renderTable('tbl-genes', g.rows, varCols,
-      { defaultSort: 'gene', defaultDir: 'asc', searchKeys: ['gene', 'disease', 'hgvs', 'acmg'] });
+    renderTable('tbl-genes', g.variants, varCols,
+      { defaultSort: 'n_individuals', defaultDir: 'desc', searchKeys: ['gene', 'hgnc_id', 'hgvs', 'allelic', 'diseases', 'acmg'] });
 
     // ── Explorer ──
     const rebuild = () => buildExplorer();
-    ['gd-view', 'gd-top', 'gd-metric'].forEach(id =>
+    ['gd-view', 'gd-top'].forEach(id =>
       document.getElementById(id).addEventListener('change', rebuild));
     buildExplorer();
   },
@@ -138,14 +138,13 @@ export default {
 async function buildExplorer() {
   const view = document.getElementById('gd-view')?.value || 'gene-per-dx';
   const topN = parseInt(document.getElementById('gd-top')?.value || '15');
-  const metric = document.getElementById('gd-metric')?.value || 'patients';
 
   const chartEl = document.getElementById('chart-gene-dx');
   const heatmapEl = document.getElementById('gd-heatmap');
   const phEl = document.getElementById('gd-placeholder');
   const legendEl = document.getElementById('gd-legend');
 
-  const data = await callApi('gene_dx_explorer', { view, top_n: topN, metric });
+  const data = await callApi('gene_dx_explorer', { view, top_n: topN });
 
   if (data.empty) {
     phEl.textContent = 'No gene data available.';
@@ -194,7 +193,7 @@ async function buildExplorer() {
     heatmapEl.innerHTML = `
       <svg width="${W}" height="${H}" style="min-width:${W}px">${gLabels}${dLabels}${cells}</svg>
       <div style="font-size:10px;color:var(--muted);margin-top:6px">
-        Colour intensity = ${metric === 'patients' ? 'unique patients' : 'total records'} · white = 0
+        Colour intensity = unique individuals · white = 0
       </div>`;
     return;
   }
@@ -224,12 +223,12 @@ async function buildExplorer() {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} ${metric}` } },
+        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw.toLocaleString()} individuals` } },
       },
       scales: {
         x: {
           stacked: true, ticks: { color: '#94a3b8', font: { size: 10, family: NUM_FONT } }, grid: { color: 'rgba(0,0,0,.06)' },
-          title: { display: true, text: metric === 'patients' ? 'Unique patients' : 'Records', color: '#7a8694', font: { size: 10, family: NUM_FONT } },
+          title: { display: true, text: 'Unique individuals', color: '#7a8694', font: { size: 10, family: NUM_FONT } },
         },
         y: { stacked: true, ticks: { color: '#334155', font: { size: 10, family: NUM_FONT } }, grid: { display: false } },
       },

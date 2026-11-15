@@ -93,6 +93,7 @@ def compute_all(packets: list | None = None) -> dict:
 
 API = {
     "gene_dx_explorer": lambda **kw: genes.explorer(_PACKETS, **kw),
+    "dx_pheno_explorer": lambda **kw: phenotypes.explorer(_PACKETS, **kw),
     "pheno_over_time": lambda **kw: phenotypes.over_time(_PACKETS, **kw),
     "meas_over_time": lambda **kw: measurements.over_time(_PACKETS, **kw),
     "assay_detail": lambda **kw: measurements.assay_detail(_PACKETS, **kw),
